@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UserController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">paymybuddy</a> &gt; <a href="index.source.html" class="el_package">com.paymybuddy.paymybuddy.controller</a> &gt; <span class="el_source">UserController.java</span></div><h1>UserController.java</h1><pre class="source lang-java linenums">package com.paymybuddy.paymybuddy.controller;
+
+import com.paymybuddy.paymybuddy.exceptions.BuddyNotFoundException;
+import com.paymybuddy.paymybuddy.model.User;
+import com.paymybuddy.paymybuddy.model.viewmodel.ConnectionViewModel;
+import com.paymybuddy.paymybuddy.model.viewmodel.TransactionViewModel;
+import com.paymybuddy.paymybuddy.model.viewmodel.UserViewModel;
+import com.paymybuddy.paymybuddy.service.ConnectionService;
+import com.paymybuddy.paymybuddy.service.TransactionService;
+import com.paymybuddy.paymybuddy.service.UserService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Optional;
+
+<span class="fc" id="L19">@Slf4j</span>
+@RestController
+@RequestMapping(&quot;/user&quot;)
+<span class="fc" id="L22">public class UserController {</span>
+
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private ConnectionService  connectionService;
+    @Autowired
+    private TransactionService transactionService;
+
+    /**
+     * Add new user.
+     *
+     * @param user user with firstname, lastname, email and password.
+     *
+     * @return User saved or exception if email already used
+     */
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public User createUser(@RequestBody User user) {
+<span class="nc" id="L42">        return userService.createUser(user);</span>
+    }
+
+    /**
+     * Lists all users.
+     *
+     * @return List of all users.
+     */
+    @GetMapping
+    public List&lt;UserViewModel&gt; getUsers() {
+<span class="nc" id="L52">        return userService.getUsers();</span>
+    }
+
+
+    /**
+     * Gets user by email
+     *
+     * @param id
+     *         email of user to find
+     *
+     * @return optional user
+     */
+    @GetMapping(&quot;/{id}&quot;)
+    public Optional&lt;UserViewModel&gt; getUserById(@PathVariable(name = &quot;id&quot;) Integer id) {
+<span class="nc" id="L66">        Optional&lt;User&gt; userById = userService.getUserById(id);</span>
+<span class="nc bnc" id="L67" title="All 2 branches missed.">        if (userById.isEmpty())  return Optional.empty();</span>
+<span class="nc" id="L68">        return Optional.of(UserService.userToViewModel(userById.get()));</span>
+    }
+
+
+    /**
+     * Deposits money to user account.
+     *
+     * @param amount
+     *         amount to deposit
+     */
+    @PutMapping(&quot;/deposit&quot;)
+    public UserViewModel deposit(@RequestParam String amount) {
+<span class="nc" id="L80">        userService.deposit(userService.getAuthenticatedUser(), amount);</span>
+<span class="nc" id="L81">        return UserService.userToViewModel(userService.getAuthenticatedUser());</span>
+    }
+
+    /**
+     * Withdraws money to user account.
+     *
+     * @param amount
+     *         amount to withdraw
+     */
+    @PutMapping(&quot;/withdraw&quot;)
+    public UserViewModel withdraw(@RequestParam String amount) {
+<span class="nc" id="L92">        userService.withdraw(userService.getAuthenticatedUser(), amount);</span>
+<span class="nc" id="L93">        return UserService.userToViewModel(userService.getAuthenticatedUser());</span>
+    }
+
+    /**
+     * Adds a connection to a user
+     *
+     * @param email
+     *         email of buddy to add
+     *
+     * @return new connection object
+     */
+    @PostMapping(&quot;/add-connection&quot;)
+    @ResponseStatus(HttpStatus.CREATED)
+    public ConnectionViewModel addConnection(@RequestParam String email) {
+<span class="nc" id="L107">        return ConnectionService.connectionToViewModel(connectionService.createConnectionBetweenTwoUsers(userService.getAuthenticatedUser(),</span>
+                                                                                                         email));
+    }
+
+    /**
+     * Get user connections.
+     *
+     * @param id
+     *         user for which the connections are wanted
+     *
+     * @return a list of connections
+     */
+    @GetMapping(&quot;/{id}/connections&quot;)
+    public List&lt;UserViewModel&gt; getConnections(@PathVariable Integer id) {
+<span class="nc" id="L121">        return connectionService.getUserConnections(getUser(id));</span>
+    }
+
+    /**
+     * Creates a transaction involving the user and the buddy behind the specified email.
+     *
+     * @param email
+     *         transaction receiver email
+     * @param description
+     *         short description for transaction
+     * @param amount
+     *         amount of transaction
+     *
+     * @return a transaction object
+     */
+    @PostMapping(&quot;/pay&quot;)
+    @ResponseStatus(HttpStatus.CREATED)
+    public TransactionViewModel payABuddy(@RequestParam String email,
+                                 @RequestParam String description,
+                                 @RequestParam double amount) {
+<span class="nc bnc" id="L141" title="All 2 branches missed.">        if (userService.getUserByEmail(email).isEmpty()) {</span>
+<span class="nc" id="L142">            String errorMessage = &quot;The buddy with &quot; +</span>
+                                  &quot;email (&quot; + email + &quot;) does not exist.&quot;;
+<span class="nc" id="L144">            log.error(errorMessage);</span>
+<span class="nc" id="L145">            throw new BuddyNotFoundException(errorMessage);</span>
+        }
+<span class="nc" id="L147">        return TransactionService.transactionToViewModel(transactionService.createTransaction(userService.getAuthenticatedUser(),</span>
+<span class="nc" id="L148">                                                    userService.getUserByEmail(email).get(),</span>
+                                                    description,
+                                                    amount));
+    }
+
+    /**
+     * Get user connections.
+     *
+     * @param id
+     *         user for which the transactions are wanted
+     *
+     * @return a list of transactions
+     */
+    @GetMapping(&quot;/{id}/transactions&quot;)
+    public List&lt;TransactionViewModel&gt; getTransactions(@PathVariable Integer id) {
+<span class="nc" id="L163">        return transactionService.getUserTransactions(id);</span>
+    }
+
+
+    /**
+     * Useful function to get a User object thanks to an ID
+     *
+     * @param id
+     *         id of user to return
+     *
+     * @return a User object
+     */
+    protected User getUser(Integer id) {
+<span class="nc" id="L176">        Optional&lt;User&gt; user = userService.getUserById(id);</span>
+<span class="nc bnc" id="L177" title="All 2 branches missed.">        if (user.isEmpty()) {</span>
+<span class="nc" id="L178">            String errorMessage = &quot;User with ID &quot; + id + &quot; does not exist.&quot;;</span>
+<span class="nc" id="L179">            log.error(errorMessage);</span>
+<span class="nc" id="L180">            throw new BuddyNotFoundException(errorMessage);</span>
+        }
+<span class="nc" id="L182">        return user.get();</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

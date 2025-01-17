@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HomeController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">paymybuddy</a> &gt; <a href="index.source.html" class="el_package">com.paymybuddy.paymybuddy.controller</a> &gt; <span class="el_source">HomeController.java</span></div><h1>HomeController.java</h1><pre class="source lang-java linenums">package com.paymybuddy.paymybuddy.controller;
+
+import com.paymybuddy.paymybuddy.model.User;
+import com.paymybuddy.paymybuddy.model.viewmodel.ConnectionViewModel;
+import com.paymybuddy.paymybuddy.model.viewmodel.TransactionViewModel;
+import com.paymybuddy.paymybuddy.service.ConnectionService;
+import com.paymybuddy.paymybuddy.service.TransactionService;
+import com.paymybuddy.paymybuddy.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import java.util.Comparator;
+import java.util.Objects;
+
+@Controller
+@RequestMapping(&quot;/&quot;)
+<span class="fc" id="L20">public class HomeController {</span>
+
+    @Autowired
+    private UserService        userService;
+    @Autowired
+    private ConnectionService  connectionService;
+    @Autowired
+    private TransactionService transactionService;
+
+    @GetMapping
+    public String showHomePage(Model model) {
+<span class="nc" id="L31">        User connectedUser = userService.getAuthenticatedUser();</span>
+
+<span class="nc" id="L33">        ConnectionViewModel mostRecentConnection = connectionService.getConnections()</span>
+<span class="nc" id="L34">                                                                    .stream()</span>
+<span class="nc" id="L35">                                                                    .filter(connection -&gt;</span>
+<span class="nc" id="L36">                                                                                    Objects.equals(connection.getInitializer().getId(), connectedUser.getId())</span>
+<span class="nc" id="L37">                                                                                    | Objects.equals(connection.getReceiver().getId(),</span>
+<span class="nc" id="L38">                                                                                                     connectedUser.getId()))</span>
+<span class="nc" id="L39">                                                                    .max(Comparator.comparing(ConnectionViewModel :: getStartingDate))</span>
+<span class="nc" id="L40">                                                                    .orElse(null);</span>
+<span class="nc" id="L41">        TransactionViewModel mostRecentTransaction = transactionService.getUserTransactions(connectedUser.getId())</span>
+<span class="nc" id="L42">                                                                       .stream()</span>
+<span class="nc" id="L43">                                                                       .max(Comparator.comparing(TransactionViewModel :: getDate))</span>
+<span class="nc" id="L44">                                                                       .orElse(null);</span>
+<span class="nc" id="L45">        model.addAttribute(&quot;user&quot;, connectedUser);</span>
+<span class="nc" id="L46">        model.addAttribute(&quot;page&quot;, &quot;home&quot;);</span>
+<span class="nc" id="L47">        model.addAttribute(&quot;mostRecentConnection&quot;, mostRecentConnection);</span>
+<span class="nc" id="L48">        model.addAttribute(&quot;mostRecentTransaction&quot;, mostRecentTransaction);</span>
+<span class="nc" id="L49">        return &quot;home&quot;;</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

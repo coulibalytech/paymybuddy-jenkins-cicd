@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ConnectionService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">paymybuddy</a> &gt; <a href="index.source.html" class="el_package">com.paymybuddy.paymybuddy.service</a> &gt; <span class="el_source">ConnectionService.java</span></div><h1>ConnectionService.java</h1><pre class="source lang-java linenums">package com.paymybuddy.paymybuddy.service;
+
+import com.paymybuddy.paymybuddy.exceptions.AlreadyABuddyException;
+import com.paymybuddy.paymybuddy.exceptions.BuddyNotFoundException;
+import com.paymybuddy.paymybuddy.model.Connection;
+import com.paymybuddy.paymybuddy.model.User;
+import com.paymybuddy.paymybuddy.model.viewmodel.ConnectionViewModel;
+import com.paymybuddy.paymybuddy.model.viewmodel.UserViewModel;
+import com.paymybuddy.paymybuddy.repository.ConnectionRepository;
+import com.paymybuddy.paymybuddy.repository.UserRepository;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
+import javax.transaction.Transactional;
+import java.time.Clock;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+@Service
+<span class="fc" id="L25">@Slf4j</span>
+<span class="fc" id="L26">public class ConnectionService {</span>
+
+	@Autowired
+	ConnectionRepository connectionRepository;
+
+	@Autowired
+	PaginationService paginationService;
+
+	@Autowired
+	UserRepository userRepository;
+	@Autowired
+	Clock          clock;
+
+	/**
+	 * List all user's connection
+	 *
+	 * @param user user for which the connections are wanted
+	 * @return a list of user with their name, first name, last name and balance
+	 */
+	public List&lt;UserViewModel&gt; getUserConnections(User user) {
+<span class="fc" id="L46">		Integer             userId      = user.getId();</span>
+<span class="fc" id="L47">		List&lt;UserViewModel&gt; connections = new ArrayList&lt;&gt;();</span>
+		// Get all connections where user is involved
+<span class="fc" id="L49">		List&lt;Connection&gt; connectionsWhereUserIsInvolved = connectionRepository</span>
+<span class="fc" id="L50">				.findByInitializerOrReceiver(user, user);</span>
+<span class="fc" id="L51">		log.debug(&quot;Found connections involving &quot; + user.getEmail() + &quot;:\n&quot; + connectionsWhereUserIsInvolved);</span>
+		// If user was initializer, then add the receiver to list and vice versa
+<span class="fc bfc" id="L53" title="All 2 branches covered.">		for (Connection connection : connectionsWhereUserIsInvolved) {</span>
+<span class="fc" id="L54">			User initializer = connection.getInitializer();</span>
+<span class="fc" id="L55">			User receiver    = connection.getReceiver();</span>
+<span class="fc bfc" id="L56" title="All 2 branches covered.">			if (userId.equals(initializer.getId())) {</span>
+<span class="fc" id="L57">				connections.add(UserService.userToViewModel(receiver));</span>
+<span class="pc bpc" id="L58" title="1 of 2 branches missed.">			} else if (userId.equals(receiver.getId())) {</span>
+<span class="fc" id="L59">				connections.add(UserService.userToViewModel(initializer));</span>
+			}
+<span class="fc" id="L61">		}</span>
+<span class="fc" id="L62">		log.info(&quot;Connections for &quot; + user.getEmail() + &quot;:\n&quot; + connections);</span>
+<span class="fc" id="L63">		return connections;</span>
+	}
+
+
+	/**
+	 * Returns a paginated list of user's connections.
+	 *
+	 * @param pageable Pageable object.
+	 * @param user       Connected user.
+	 * @return a paginated list of connections.
+	 */
+	public Page&lt;?&gt; getPaginatedUserConnections(Pageable pageable, User user) {
+		// Get raw list of connections
+<span class="nc" id="L76">		List&lt;UserViewModel&gt; connections = getUserConnections(user);</span>
+<span class="nc" id="L77">		return paginationService.getPaginatedList(pageable, connections);</span>
+	}
+
+
+
+	/**
+	 * Creates a connection between two users and saves it to database.
+	 *
+	 * @param initializer connection initializer
+	 * @param email       buddy to add
+	 * @return connection object
+	 */
+	@Transactional
+	public Connection createConnectionBetweenTwoUsers(User initializer, String email) {
+<span class="fc bfc" id="L91" title="All 2 branches covered.">		if (UserService.isInvalidEmail(email)) {</span>
+<span class="fc" id="L92">			String invalidEmailMessage = &quot;The email provided is invalid.&quot;;</span>
+<span class="fc" id="L93">			log.error(invalidEmailMessage);</span>
+<span class="fc" id="L94">			throw new IllegalArgumentException(invalidEmailMessage);</span>
+		}
+<span class="fc bfc" id="L96" title="All 2 branches covered.">		if (email.equalsIgnoreCase(initializer.getEmail())) {</span>
+<span class="fc" id="L97">			log.error(&quot;You are trying to add yourself!&quot;);</span>
+<span class="fc" id="L98">			throw new IllegalArgumentException(&quot;You are trying to add yourself!&quot;);</span>
+		}
+<span class="fc" id="L100">		Optional&lt;User&gt; optionalReceiver = userRepository.findByEmail(email);</span>
+<span class="fc bfc" id="L101" title="All 2 branches covered.">		if (optionalReceiver.isEmpty()) {</span>
+			// Check if a user with specified email exists
+<span class="fc" id="L103">			String errorMessage = &quot;Email &quot; + email + &quot; does not match any buddy.&quot;;</span>
+<span class="fc" id="L104">			log.error(errorMessage);</span>
+<span class="fc" id="L105">			throw new BuddyNotFoundException(errorMessage);</span>
+		}
+<span class="fc" id="L107">		User receiver = optionalReceiver.get();</span>
+<span class="fc bfc" id="L108" title="All 2 branches covered.">		if (getUserConnections(initializer).contains(UserService.userToViewModel(receiver))) {</span>
+<span class="fc" id="L109">			String errorMessage = receiver.getFirstName() + &quot; &quot; + receiver.getLastName() + &quot; is already a Buddy!&quot;;</span>
+<span class="fc" id="L110">			log.error(errorMessage);</span>
+<span class="fc" id="L111">			throw new AlreadyABuddyException(errorMessage);</span>
+		} else {
+			// Create connection with both users
+<span class="fc" id="L114">			log.info(&quot;Creating new connection between &quot; +</span>
+<span class="fc" id="L115">					initializer.getEmail() +</span>
+<span class="fc" id="L116">					&quot; and &quot; + receiver.getEmail() + &quot;.&quot;);</span>
+<span class="fc" id="L117">			return saveConnection(createConnection(initializer, receiver));</span>
+		}
+
+	}
+
+	/**
+	 * Creates a connection object.
+	 *
+	 * @param initializer connection initializer
+	 * @param receiver    connection receiver
+	 * @return connection object
+	 */
+	protected Connection createConnection(User initializer, User receiver) {
+<span class="fc" id="L130">		Connection connection = new Connection();</span>
+<span class="fc" id="L131">		connection.setInitializer(initializer);</span>
+<span class="fc" id="L132">		connection.setReceiver(receiver);</span>
+<span class="fc" id="L133">		connection.setStartingDate(LocalDateTime.now(clock));</span>
+		// Add connection to initializer's initiatedConnections
+<span class="fc" id="L135">		initializer.getInitializedConnections().add(connection);</span>
+		// Add connection to receiver's receivedConnections
+<span class="fc" id="L137">		receiver.getReceivedConnections().add(connection);</span>
+<span class="fc" id="L138">		return connection;</span>
+	}
+
+	/**
+	 * Saves connection to database.
+	 *
+	 * @param connection connection to save
+	 * @return saved connection
+	 */
+	@Transactional
+	public Connection saveConnection(Connection connection) {
+<span class="fc" id="L149">		return connectionRepository.save(connection);</span>
+	}
+
+	/**
+	 * Lists all connections in data base
+	 *
+	 * @return a list of connections
+	 */
+	public List&lt;ConnectionViewModel&gt; getConnections() {
+<span class="fc" id="L158">		Iterable&lt;Connection&gt;      connections          = connectionRepository.findAll();</span>
+<span class="fc" id="L159">		List&lt;ConnectionViewModel&gt; connectionViewModels = new ArrayList&lt;&gt;();</span>
+		// extract info from user to user view model
+<span class="fc" id="L161">		connections.forEach(connection -&gt; connectionViewModels.add(connectionToViewModel(connection)));</span>
+<span class="fc" id="L162">		return connectionViewModels;</span>
+	}
+
+	/**
+	 * Gets a connection by its ID.
+	 *
+	 * @param id connection to find
+	 * @return Optional connection
+	 */
+	public Optional&lt;ConnectionViewModel&gt; getConnectionById(Integer id) {
+<span class="fc bfc" id="L172" title="All 2 branches covered.">		if (connectionRepository.findById(id).isPresent()) {</span>
+<span class="fc" id="L173">			return Optional.of(connectionToViewModel(connectionRepository.findById(id).get()));</span>
+		} else {
+<span class="fc" id="L175">			return Optional.empty();</span>
+		}
+	}
+
+	public static ConnectionViewModel connectionToViewModel(Connection connection) {
+<span class="fc" id="L180">		return new ConnectionViewModel(connection.getId(), UserService.userToViewModel(connection.getInitializer()),</span>
+<span class="fc" id="L181">				UserService.userToViewModel(connection.getReceiver()),</span>
+<span class="fc" id="L182">				connection.getStartingDate());</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

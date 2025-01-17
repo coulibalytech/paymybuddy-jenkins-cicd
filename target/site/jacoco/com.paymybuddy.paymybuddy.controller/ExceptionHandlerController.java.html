@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ExceptionHandlerController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">paymybuddy</a> &gt; <a href="index.source.html" class="el_package">com.paymybuddy.paymybuddy.controller</a> &gt; <span class="el_source">ExceptionHandlerController.java</span></div><h1>ExceptionHandlerController.java</h1><pre class="source lang-java linenums">package com.paymybuddy.paymybuddy.controller;
+
+import com.paymybuddy.paymybuddy.exceptions.*;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+/**
+ * Exception thrown when a resource is not found.
+ */
+<span class="fc" id="L13">@Slf4j</span>
+@RestControllerAdvice
+<span class="fc" id="L15">public class ExceptionHandlerController {</span>
+
+
+    @ExceptionHandler(BuddyNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public String buddyNotFoundException(BuddyNotFoundException notFoundException) {
+<span class="nc" id="L21">        log.error(&quot;Buddy not found.&quot;, notFoundException);</span>
+<span class="nc" id="L22">        return &quot;Buddy not found:\n&quot; + notFoundException.getMessage();</span>
+    }
+
+    @ExceptionHandler(BankAccountNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public String bankAccountNotFoundException(BankAccountNotFoundException notFoundException) {
+<span class="nc" id="L28">        log.error(&quot;Bank account not found.&quot;, notFoundException);</span>
+<span class="nc" id="L29">        return &quot;Bank account not found:\n&quot; + notFoundException.getMessage();</span>
+    }
+
+    @ExceptionHandler(InvalidAmountException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public String illegalValueException(InvalidAmountException invalidAmountException) {
+<span class="nc" id="L35">        log.error(&quot;Illegal argument value.&quot;, invalidAmountException);</span>
+<span class="nc" id="L36">        return &quot;Illegal argument value:\n&quot; + invalidAmountException.getMessage();</span>
+    }
+
+    @ExceptionHandler(InvalidPayeeException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public String illegalValueException(InvalidPayeeException invalidPayeeException) {
+<span class="nc" id="L42">        log.error(&quot;Illegal argument value.&quot;, invalidPayeeException);</span>
+<span class="nc" id="L43">        return &quot;Illegal argument value:\n&quot; + invalidPayeeException.getMessage();</span>
+    }
+
+    @ExceptionHandler(InsufficientBalanceException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public String illegalValueException(InsufficientBalanceException insufficientBalanceException) {
+<span class="nc" id="L49">        log.error(&quot;Illegal argument value.&quot;, insufficientBalanceException);</span>
+<span class="nc" id="L50">        return &quot;Illegal argument value:\n&quot; + insufficientBalanceException.getMessage();</span>
+    }
+
+    @ExceptionHandler(AlreadyABuddyException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public String illegalValueException(AlreadyABuddyException alreadyABuddyException) {
+<span class="nc" id="L56">        log.error(&quot;Illegal argument value.&quot;, alreadyABuddyException);</span>
+<span class="nc" id="L57">        return &quot;Illegal argument value:\n&quot; + alreadyABuddyException.getMessage();</span>
+    }
+
+    @ExceptionHandler(EmailAlreadyUsedException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public String illegalValueException(EmailAlreadyUsedException emailAlreadyUsedException) {
+<span class="nc" id="L63">        log.error(&quot;Illegal argument value.&quot;, emailAlreadyUsedException);</span>
+<span class="nc" id="L64">        return &quot;Illegal argument value:\n&quot; + emailAlreadyUsedException.getMessage();</span>
+    }
+
+    @ExceptionHandler(NotAuthenticatedException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public String notAuthenticatedException(NotAuthenticatedException notAuthenticatedException) {
+<span class="nc" id="L70">        log.error(&quot;Not authenticated&quot;, notAuthenticatedException);</span>
+<span class="nc" id="L71">        return &quot;Unauthorized.\n&quot; + notAuthenticatedException.getMessage();</span>
+    }
+
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public String returnMessage(Exception exception) {
+<span class="nc" id="L77">        log.error(&quot;An error occurred.&quot;, exception);</span>
+<span class="nc" id="L78">        return &quot;An error occurred:\n &quot; + exception.getMessage();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

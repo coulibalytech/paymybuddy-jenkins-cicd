@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PaginationService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">paymybuddy</a> &gt; <a href="index.source.html" class="el_package">com.paymybuddy.paymybuddy.service</a> &gt; <span class="el_source">PaginationService.java</span></div><h1>PaginationService.java</h1><pre class="source lang-java linenums">package com.paymybuddy.paymybuddy.service;
+
+import com.paymybuddy.paymybuddy.constants.Pagination;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+
+import java.util.Collections;
+import java.util.List;
+
+@Service
+<span class="fc" id="L14">public class PaginationService {</span>
+    public PageImpl&lt;?&gt; getPaginatedList(Pageable pageable, List&lt;?&gt; rawList) {
+        // Configure pagination parameters
+<span class="nc" id="L17">        int                        pageSize    = Pagination.DEFAULT_SIZE;</span>
+<span class="nc" id="L18">        int                        currentPage = pageable.getPageNumber();</span>
+<span class="nc" id="L19">        int                        startItem   = currentPage * pageSize;</span>
+        List&lt;?&gt; list;
+
+<span class="nc bnc" id="L22" title="All 2 branches missed.">        if (rawList.size() &lt; startItem) {</span>
+<span class="nc" id="L23">            list = Collections.emptyList();</span>
+        } else {
+<span class="nc" id="L25">            int toIndex = Math.min(startItem + pageSize, rawList.size());</span>
+<span class="nc" id="L26">            list = rawList.subList(startItem, toIndex);</span>
+        }
+        // Show most recent first
+<span class="nc" id="L29">        return new PageImpl&lt;&gt;(list,</span>
+<span class="nc" id="L30">                              PageRequest.of(currentPage, pageSize, Sort.by(&quot;date&quot;).descending()),</span>
+<span class="nc" id="L31">                              rawList.size());</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UserService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">paymybuddy</a> &gt; <a href="index.source.html" class="el_package">com.paymybuddy.paymybuddy.service</a> &gt; <span class="el_source">UserService.java</span></div><h1>UserService.java</h1><pre class="source lang-java linenums">package com.paymybuddy.paymybuddy.service;
+
+import com.paymybuddy.paymybuddy.constants.EmailValidator;
+import com.paymybuddy.paymybuddy.constants.Fee;
+import com.paymybuddy.paymybuddy.exceptions.BankAccountNotFoundException;
+import com.paymybuddy.paymybuddy.exceptions.BuddyNotFoundException;
+import com.paymybuddy.paymybuddy.exceptions.EmailAlreadyUsedException;
+import com.paymybuddy.paymybuddy.model.BankAccount;
+import com.paymybuddy.paymybuddy.model.User;
+import com.paymybuddy.paymybuddy.model.viewmodel.UserViewModel;
+import com.paymybuddy.paymybuddy.repository.BankAccountRepository;
+import com.paymybuddy.paymybuddy.repository.UserRepository;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
+import javax.transaction.Transactional;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.regex.Pattern;
+
+@Service
+<span class="fc" id="L29">@Slf4j</span>
+public class UserService {
+
+    /**
+     * Instance of UserRepository.
+     */
+    @Autowired
+    private final UserRepository userRepository;
+
+    @Autowired
+    BankAccountRepository bankAccountRepository;
+
+    @Autowired
+    private final BCryptPasswordEncoder passwordEncoder;
+
+    public UserService(UserRepository userRepository,
+<span class="fc" id="L45">                       BCryptPasswordEncoder passwordEncoder, BankAccountRepository bankAccountRepository) {</span>
+<span class="fc" id="L46">        this.userRepository = userRepository;</span>
+<span class="fc" id="L47">        this.passwordEncoder = passwordEncoder;</span>
+<span class="fc" id="L48">        this.bankAccountRepository = bankAccountRepository;</span>
+<span class="fc" id="L49">    }</span>
+
+    /**
+     * Saves user to database.
+     *
+     * @param user
+     *         user with firstname, lastname, email and password filled from signup form.
+     *
+     * @return User with id.
+     */
+    @Transactional
+    public User createUser(User user) {
+<span class="fc" id="L61">        String email = user.getEmail();</span>
+<span class="fc bfc" id="L62" title="All 2 branches covered.">        if (isInvalidEmail(email)) {</span>
+<span class="fc" id="L63">            String invalidEmailMessage = &quot;The email provided is invalid.&quot;;</span>
+<span class="fc" id="L64">            log.error(invalidEmailMessage);</span>
+<span class="fc" id="L65">            throw new IllegalArgumentException(invalidEmailMessage);</span>
+        }
+
+        // Detect if email is already used
+<span class="fc" id="L69">        Optional&lt;User&gt; existingUserWithEmail = userRepository.findByEmail(email);</span>
+<span class="fc bfc" id="L70" title="All 2 branches covered.">        if (existingUserWithEmail.isPresent()) {</span>
+<span class="fc" id="L71">            String errorMessage = &quot;Email &quot; + email + &quot; is already used.&quot; +</span>
+                                  &quot; Please sign in with another email.&quot;;
+<span class="fc" id="L73">            log.error(errorMessage);</span>
+<span class="fc" id="L74">            throw new EmailAlreadyUsedException(errorMessage);</span>
+        }
+<span class="fc" id="L76">        user.setBalance(new BigDecimal(&quot;0.00&quot;));</span>
+<span class="fc" id="L77">        user.setPassword(passwordEncoder.encode(user.getPassword()));</span>
+<span class="fc" id="L78">        return userRepository.save(user);</span>
+    }
+
+    /**
+     * Lists all users in database.
+     *
+     * @return a set of users.
+     */
+    public List&lt;UserViewModel&gt; getUsers() {
+<span class="fc" id="L87">        Iterable&lt;User&gt;      users          = userRepository.findAll();</span>
+<span class="fc" id="L88">        List&lt;UserViewModel&gt; usersViewModel = new ArrayList&lt;&gt;();</span>
+        // extract info from user to user view model
+<span class="fc" id="L90">        users.forEach(user -&gt; usersViewModel.add(userToViewModel(user)));</span>
+<span class="fc" id="L91">        return usersViewModel;</span>
+    }
+
+    /**
+     * Finds a user by their id.
+     *
+     * @param id
+     *         User id.
+     *
+     * @return found user or empty optional.
+     */
+    public Optional&lt;User&gt; getUserById(Integer id) {
+<span class="nc" id="L103">        Assert.notNull(id, &quot;User ID must not be null&quot;);</span>
+<span class="nc" id="L104">        return userRepository.findById(id);</span>
+    }
+
+    /**
+     * Finds a user by their email address.
+     *
+     * @param email
+     *         User's email address.
+     *
+     * @return optional user.
+     */
+    public Optional&lt;User&gt; getUserByEmail(String email) {
+<span class="nc" id="L116">        Assert.notNull(email, &quot;Email must not be null&quot;);</span>
+<span class="nc" id="L117">        return userRepository.findByEmail(email);</span>
+    }
+
+    /**
+     * Deletes a user.
+     *
+     * @param user
+     *         User to delete.
+     */
+    @Transactional
+    public void deleteUser(User user) {
+<span class="nc" id="L128">        Assert.notNull(user, &quot;User must not be null&quot;);</span>
+<span class="nc" id="L129">        userRepository.delete(user);</span>
+<span class="nc" id="L130">    }</span>
+
+    /**
+     * Email validator.
+     *
+     * @param emailAddress
+     *         email address to validate
+     *
+     * @return true if valid, false otherwise.
+     */
+    public static boolean isInvalidEmail(String emailAddress) {
+<span class="fc" id="L141">        return !Pattern.compile(EmailValidator.REGEX_PATTERN)</span>
+<span class="fc" id="L142">                       .matcher(emailAddress)</span>
+<span class="fc bfc" id="L143" title="All 2 branches covered.">                       .matches();</span>
+    }
+
+
+    /**
+     * Returns provided user's bank account.
+     *
+     * @param user
+     *         user for which the bank account is needed.
+     *
+     * @return user bank account if exists, empty optional otherwise.
+     */
+    public Optional&lt;BankAccount&gt; getUserBankAccount(User user) {
+<span class="fc" id="L156">        Assert.notNull(user, &quot;User must not be null&quot;);</span>
+<span class="fc" id="L157">        return bankAccountRepository.findByUser(user);</span>
+    }
+
+
+    /**
+     * Deposits money to buddy account.
+     */
+    @Transactional
+    public void deposit(User user, String amount) {
+<span class="fc" id="L166">        Assert.notNull(user, &quot;User must not be null&quot;);</span>
+        // if amount is still not valid after interface's validator, remove any negative signs
+<span class="fc" id="L168">        amount = amount.replace(&quot;-&quot;, &quot;&quot;);</span>
+        // find user's bank account
+<span class="fc" id="L170">        Optional&lt;BankAccount&gt; bankAccount = bankAccountRepository.findByUser(user);</span>
+        // deposit cannot be done if the user does not own a bank account
+<span class="pc bpc" id="L172" title="1 of 2 branches missed.">        if (bankAccount.isEmpty()) {</span>
+<span class="nc" id="L173">            log.error(&quot;The user does not have any bank account. Deposit can not be proceeded.&quot;);</span>
+<span class="nc" id="L174">            throw new BankAccountNotFoundException(&quot;The user does not have any bank account. Deposit can not be proceeded.&quot;);</span>
+        }
+<span class="fc" id="L176">        BigDecimal amountToDeposit = new BigDecimal(amount).setScale(Fee.SCALE, RoundingMode.HALF_UP);</span>
+        // Subtract amount to deposit from bank account
+<span class="fc" id="L178">        bankAccount.get().setBalance(bankAccount.get().getBalance().subtract(amountToDeposit));</span>
+        // add amount to deposit to user's account
+<span class="fc" id="L180">        user.setBalance(user.getBalance().add(amountToDeposit));</span>
+<span class="fc" id="L181">        userRepository.save(user);</span>
+<span class="fc" id="L182">    }</span>
+
+    /**
+     * Withdraws money to user's bank account.
+     */
+    @Transactional
+    public void withdraw(User user, String amount) {
+<span class="fc" id="L189">        Assert.notNull(user, &quot;User must not be null&quot;);</span>
+        // if amount is still not valid after interface's validator, remove any negative signs
+<span class="fc" id="L191">        amount = amount.replace(&quot;-&quot;, &quot;&quot;);</span>
+        // find user's bank account
+<span class="fc" id="L193">        Optional&lt;BankAccount&gt; bankAccount = bankAccountRepository.findByUser(user);</span>
+        // withdraw cannot be done if the user does not own a bank account
+<span class="pc bpc" id="L195" title="1 of 2 branches missed.">        if (bankAccount.isEmpty()) {</span>
+<span class="nc" id="L196">            log.error(&quot;The user does not have any bank account. Withdrawal can not be proceeded.&quot;);</span>
+<span class="nc" id="L197">            throw new BankAccountNotFoundException(&quot;The user does not have any bank account. Withdrawal can not be &quot; +</span>
+                                                   &quot;proceeded.&quot;);
+        }
+<span class="fc" id="L200">        BigDecimal amountToWithdraw = new BigDecimal(amount).setScale(Fee.SCALE, RoundingMode.HALF_UP);</span>
+        // add amount to deposit from bank account
+<span class="fc" id="L202">        bankAccount.get().setBalance(bankAccount.get().getBalance().add(amountToWithdraw));</span>
+        // subtract amount to deposit to user's account
+<span class="fc" id="L204">        user.setBalance(user.getBalance().subtract(amountToWithdraw));</span>
+<span class="fc" id="L205">        userRepository.save(user);</span>
+<span class="fc" id="L206">    }</span>
+
+    /**
+     * Converts User entity to UserViewModel.
+     *
+     * @param user
+     *         user to convert
+     *
+     * @return a UserViewModel object
+     *
+     * @see com.paymybuddy.paymybuddy.model.viewmodel.UserViewModel
+     */
+    public static UserViewModel userToViewModel(User user) {
+<span class="fc" id="L219">        return new UserViewModel(user.getId(), user.getEmail(), user.getFirstName(), user.getLastName(),</span>
+<span class="fc" id="L220">                                 user.getBalance());</span>
+    }
+
+    /**
+     * Returns authenticated user using Spring security context.
+     *
+     * @return authenticated user
+     *
+     * @see com.paymybuddy.paymybuddy.model.User
+     */
+    public User getAuthenticatedUser() {
+<span class="nc" id="L231">        String username = SecurityContextHolder.getContext().getAuthentication().getName();</span>
+<span class="nc bnc" id="L232" title="All 2 branches missed.">        if (getUserByEmail(username).isEmpty()) {</span>
+<span class="nc" id="L233">            throw new BuddyNotFoundException(&quot;Email &quot; + username + &quot; does not match any Buddy.&quot;);</span>
+        }
+<span class="nc" id="L235">        return getUserByEmail(username).get();</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

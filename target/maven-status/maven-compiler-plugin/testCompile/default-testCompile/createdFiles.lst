@@ -1,0 +1,10 @@
+com/paymybuddy/paymybuddy/service/BankAccountServiceTest.class
+com/paymybuddy/paymybuddy/repository/UserRepositoryIT.class
+com/paymybuddy/paymybuddy/repository/ConnectionRepositoryIT.class
+com/paymybuddy/paymybuddy/service/UserServiceTest.class
+com/paymybuddy/paymybuddy/service/ConnectionServiceTest.class
+com/paymybuddy/paymybuddy/PayMyBuddyApplicationTests.class
+com/paymybuddy/paymybuddy/repository/BankAccountRepositoryIT.class
+com/paymybuddy/paymybuddy/repository/TransactionRepositoryIT.class
+com/paymybuddy/paymybuddy/service/UserServiceIT.class
+com/paymybuddy/paymybuddy/service/TransactionServiceTest.class

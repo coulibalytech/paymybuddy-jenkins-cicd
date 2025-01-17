@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TransactionService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">paymybuddy</a> &gt; <a href="index.source.html" class="el_package">com.paymybuddy.paymybuddy.service</a> &gt; <span class="el_source">TransactionService.java</span></div><h1>TransactionService.java</h1><pre class="source lang-java linenums">package com.paymybuddy.paymybuddy.service;
+
+import com.paymybuddy.paymybuddy.constants.Fee;
+import com.paymybuddy.paymybuddy.exceptions.BuddyNotFoundException;
+import com.paymybuddy.paymybuddy.exceptions.InsufficientBalanceException;
+import com.paymybuddy.paymybuddy.exceptions.InvalidAmountException;
+import com.paymybuddy.paymybuddy.exceptions.InvalidPayeeException;
+import com.paymybuddy.paymybuddy.model.Transaction;
+import com.paymybuddy.paymybuddy.model.User;
+import com.paymybuddy.paymybuddy.model.viewmodel.TransactionViewModel;
+import com.paymybuddy.paymybuddy.repository.TransactionRepository;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
+import javax.transaction.Transactional;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.Clock;
+import java.time.LocalDateTime;
+import java.util.*;
+
+@Service
+<span class="fc" id="L27">@Slf4j</span>
+<span class="fc" id="L28">public class TransactionService {</span>
+	@Autowired
+	TransactionRepository transactionRepository;
+	@Autowired
+	ConnectionService     connectionService;
+	@Autowired
+	UserService           userService;
+	@Autowired
+	PaginationService paginationService;
+	@Autowired
+	Clock                 clock;
+
+	/**
+	 * Saves a new transaction.
+	 */
+	@Transactional
+	public Transaction createTransaction(User issuer, User payee, String description, double amount) {
+<span class="fc" id="L45">		Assert.notNull(issuer, &quot;Issuer must not be null&quot;);</span>
+<span class="fc" id="L46">		Assert.notNull(payee, &quot;Payee must not be null&quot;);</span>
+		// Check that amount is not negative nor 0
+<span class="fc bfc" id="L48" title="All 2 branches covered.">		if (amount &lt; 0) {</span>
+<span class="fc" id="L49">			String errorMessage = &quot;Transaction amount can not be negative.&quot;;</span>
+<span class="fc" id="L50">			log.error(errorMessage);</span>
+<span class="fc" id="L51">			throw new InvalidAmountException(errorMessage);</span>
+		}
+<span class="fc bfc" id="L53" title="All 2 branches covered.">		if (amount == 0) {</span>
+<span class="fc" id="L54">			String errorMessage = &quot;Transaction amount must be more than 0.&quot;;</span>
+<span class="fc" id="L55">			log.error(errorMessage);</span>
+<span class="fc" id="L56">			throw new InvalidAmountException(errorMessage);</span>
+		}
+		// Calculate fee and total amount
+<span class="fc" id="L59">		BigDecimal amountWithFee = calculateAmountWithFee(amount).get(&quot;amountWithFee&quot;);</span>
+
+		// Check that issuer has enough money for this transaction
+<span class="fc bfc" id="L62" title="All 2 branches covered.">		if (issuer.getBalance().compareTo(amountWithFee) &lt; 0) {</span>
+<span class="fc" id="L63">			String errorMessage = &quot;Issuer has insufficient balance to make this transfer.&quot;;</span>
+<span class="fc" id="L64">			log.error(errorMessage);</span>
+<span class="fc" id="L65">			throw new InsufficientBalanceException(errorMessage);</span>
+		}
+		// Check that buddy is making a transaction with a connection
+<span class="fc bfc" id="L68" title="All 2 branches covered.">		if (!connectionService.getUserConnections(issuer).contains(UserService.userToViewModel(payee))) {</span>
+<span class="fc" id="L69">			String errorMessage = &quot;The payee is not a buddy from issuer.&quot;;</span>
+<span class="fc" id="L70">			log.error(errorMessage);</span>
+<span class="fc" id="L71">			throw new InvalidPayeeException(errorMessage);</span>
+		}
+		// Withdraw amount with applied fee from issuer's balance
+<span class="fc" id="L74">		issuer.setBalance(issuer.getBalance().subtract(amountWithFee));</span>
+		// Credit payee
+<span class="fc" id="L76">		BigDecimal transactionAmount = new BigDecimal(Double.toString(amount))</span>
+<span class="fc" id="L77">				.setScale(Fee.SCALE, RoundingMode.HALF_UP);</span>
+<span class="fc" id="L78">		payee.setBalance(payee.getBalance()</span>
+<span class="fc" id="L79">				.add(BigDecimal.valueOf(amount)</span>
+<span class="fc" id="L80">						.setScale(Fee.SCALE, RoundingMode.HALF_UP)));</span>
+		// Update transaction with all information before saving
+<span class="fc" id="L82">		Transaction transaction = new Transaction();</span>
+<span class="fc" id="L83">		transaction.setIssuer(issuer);</span>
+<span class="fc" id="L84">		transaction.setPayee(payee);</span>
+<span class="fc" id="L85">		transaction.setAmount(transactionAmount);</span>
+<span class="fc" id="L86">		transaction.setDate(LocalDateTime.now(clock));</span>
+<span class="fc" id="L87">		transaction.setDescription(description);</span>
+
+<span class="fc" id="L89">		issuer.getInitiatedTransactions().add(transaction);</span>
+<span class="fc" id="L90">		payee.getReceivedTransactions().add(transaction);</span>
+
+<span class="fc" id="L92">		return transactionRepository.save(transaction);</span>
+	}
+
+	/**
+	 * Calculates fee information for a given amount.
+	 *
+	 * @param amount Transaction amount
+	 * @return a HashMap with transaction amount, calculated fee, and amount with fee information
+	 */
+	public Map&lt;String, BigDecimal&gt; calculateAmountWithFee(double amount) {
+		// Create the Map
+<span class="fc" id="L103">		HashMap&lt;String, BigDecimal&gt; amountAndFee = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L104">		BigDecimal bdAmount = new BigDecimal(Double.toString(amount))</span>
+<span class="fc" id="L105">				.setScale(Fee.SCALE, RoundingMode.HALF_UP);</span>
+<span class="fc" id="L106">		BigDecimal bdFee = new BigDecimal(Double.toString(amount * Fee.TRANSACTION_FEE))</span>
+<span class="fc" id="L107">				.setScale(Fee.SCALE, RoundingMode.HALF_UP);</span>
+<span class="fc" id="L108">		amountAndFee.put(&quot;amount&quot;, bdAmount);</span>
+<span class="fc" id="L109">		amountAndFee.put(&quot;fee&quot;, bdFee);</span>
+<span class="fc" id="L110">		amountAndFee.put(&quot;amountWithFee&quot;, bdAmount.add(bdFee));</span>
+<span class="fc" id="L111">		return amountAndFee;</span>
+	}
+
+	/**
+	 * Lists all connections in data base
+	 *
+	 * @return a list of connections
+	 */
+	public List&lt;TransactionViewModel&gt; getTransactions() {
+<span class="nc" id="L120">		Iterable&lt;Transaction&gt;      transactions          = transactionRepository.findAll();</span>
+<span class="nc" id="L121">		List&lt;TransactionViewModel&gt; transactionViewModels = new ArrayList&lt;&gt;();</span>
+		// extract info from user to user view model
+<span class="nc" id="L123">		transactions.forEach(transaction -&gt; transactionViewModels.add(transactionToViewModel(transaction)));</span>
+<span class="nc" id="L124">		return transactionViewModels;</span>
+	}
+
+	public Optional&lt;TransactionViewModel&gt; getTransactionById(Integer id) {
+<span class="nc" id="L128">		Assert.notNull(id, &quot;User ID must not be null&quot;);</span>
+<span class="nc bnc" id="L129" title="All 2 branches missed.">		if (transactionRepository.findById(id).isPresent()) {</span>
+<span class="nc" id="L130">			return Optional.of(transactionToViewModel(transactionRepository.findById(id).get()));</span>
+		} else {
+<span class="nc" id="L132">			return Optional.empty();</span>
+		}
+	}
+
+	/**
+	 * List all user's transactions.
+	 *
+	 * @param id user ID for which the transactions are wanted
+	 * @return a list of transactions
+	 */
+	public List&lt;TransactionViewModel&gt; getUserTransactions(Integer id) {
+<span class="fc" id="L143">		Assert.notNull(id, &quot;User ID must not be null&quot;);</span>
+<span class="pc bpc" id="L144" title="1 of 2 branches missed.">		if (userService.getUserById(id).isEmpty()) {</span>
+<span class="nc" id="L145">			log.error(&quot;User does not exist.&quot;);</span>
+<span class="nc" id="L146">			throw new BuddyNotFoundException(&quot;User does not exist.&quot;);</span>
+		}
+<span class="fc" id="L148">		User                       user         = userService.getUserById(id).get();</span>
+<span class="fc" id="L149">		List&lt;TransactionViewModel&gt; transactions = new ArrayList&lt;&gt;();</span>
+		// Get all transactions where user is involved
+<span class="fc" id="L151">		List&lt;Transaction&gt; transactionsWhereUserIsInvolved = transactionRepository</span>
+<span class="fc" id="L152">				.findByIssuerOrPayee(user, user);</span>
+<span class="fc" id="L153">		log.debug(&quot;Found transactions involving &quot; + user.getEmail() + &quot;:\n&quot; + transactionsWhereUserIsInvolved);</span>
+<span class="fc" id="L154">		transactionsWhereUserIsInvolved.forEach(transaction -&gt; transactions.add(transactionToViewModel(transaction)));</span>
+<span class="fc" id="L155">		log.info(&quot;Transactions with &quot; + user.getEmail() + &quot;:\n&quot; + transactions);</span>
+<span class="fc" id="L156">		return transactions;</span>
+	}
+
+	/**
+	 * Returns a paginated list of user's transactions.
+	 *
+	 * @param pageable Pageable object.
+	 * @param id       Id of connected user.
+	 * @return a paginated list of transactions.
+	 */
+	public Page&lt;?&gt; getPaginatedUserTransactions(Pageable pageable, Integer id) {
+		// Get raw list of transactions
+<span class="nc" id="L168">		List&lt;TransactionViewModel&gt; transactions = getUserTransactions(id);</span>
+<span class="nc" id="L169">		return paginationService.getPaginatedList(pageable, transactions);</span>
+	}
+
+	public static TransactionViewModel transactionToViewModel(Transaction transaction) {
+<span class="fc" id="L173">		return new TransactionViewModel(transaction.getId(),</span>
+<span class="fc" id="L174">				UserService.userToViewModel(transaction.getIssuer()),</span>
+<span class="fc" id="L175">				UserService.userToViewModel(transaction.getPayee()),</span>
+<span class="fc" id="L176">				transaction.getDate(), transaction.getAmount(), transaction.getDescription());</span>
+	}
+
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>
