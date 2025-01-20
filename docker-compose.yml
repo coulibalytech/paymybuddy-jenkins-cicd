@@ -1,1 +1,70 @@
+version: "3.8"
+
+services:
+  paymybuddy-db:
+    image: mysql:8.0
+    container_name: paymybuddy-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: db_paymybuddy
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - db-data:/var/lib/mysql
+      - ./initdb:/docker-entrypoint-initdb.d
+    networks:
+        - paymybuddy-network
+
+  paymybuddy-backend:
+    build: 
+      context: .
+    container_name: paymybuddy-backend
+    restart: always
+    environment:
+        SPRING_DATASOURCE_URL: jdbc:mysql://paymybuddy-db:3306/db_paymybuddy
+        SPRING_DATASOURCE_USERNAME: ${MYSQL_USER}
+        SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
+    depends_on:
+        - paymybuddy-db
+    ports:
+        - "8181:8080"
+    networks:
+        - paymybuddy-network
+
+  registry_backend:
+      image: registry:2.8.1
+      container_name: registry_backend
+      ports:
+        - 5000:5000
+      volumes:
+        - registry_data:/registry_data
+      networks:
+        - registry_network
+    
+  registry_frontend:
+      image:  joxit/docker-registry-ui:2
+      container_name: registry_frontend
+      environment:
+        NGINX_PROXY_PASS_URL: http://registry_backend:5000
+        DELETE_IMAGES=true: true
+        REGISTRY_TITLE: registry-paymybuddy
+      ports:
+        - 8282:80 
+      networks:
+        - registry_network
+      depends_on:
+        - registry_backend
+
+volumes:
+  db-data:
+  registry_data:
+
+networks:
+      paymybuddy-network:
+        driver: bridge
+      registry_network:
+        driver: bridge
 
