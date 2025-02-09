@@ -15,13 +15,38 @@ This POC demonstrates the deployment of the *PayMyBuddy* app using Docker contai
 - Versioning infrastructure releases
 - Implementing best practices for Docker
 - Using Infrastructure as Code
+- Creat CI/CD Pipeline with Jenkins
+- Check Quality of Code with SonarCloud
+
+## **Steps of the CI/CD Pipeline**
+
+The pipeline must include the following steps, and the steps must be executed with a Docker-based agent:
+
+1. **Automated Tests**  
+   Execution of unit tests and integration tests.
+
+2. **Code Quality Verification**  
+   Static code analysis to comply with quality standards using SonarCloud.
+
+3. **Build and Packaging**  
+   Generation of the compiled application file from the source code, building the image, and pushing the image to DockerHub.
+
+4. **Staging**  
+   Deployment in a pre-production environment.
+
+5. **Production**  
+   Final deployment in the production environment.
+
+6. **Deployment Validation Tests**  
+   Verification that the deployment was successful and that the application works as expected.
 
 ### Key Themes:
 
 - Dockerization of the backend and database
 - Orchestration with Docker Compose
 - Securing the deployment process
-- Deploying and managing Docker images via Docker Registry
+- Deploying and managing Docker images via DockerHub
+- Check Quality of Code with SonarCloud
 
 ---
 
