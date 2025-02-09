@@ -34,37 +34,11 @@ services:
     networks:
         - paymybuddy-network
 
-  registry_backend:
-      image: registry:2.8.1
-      container_name: registry_backend
-      ports:
-        - 5000:5000
-      volumes:
-        - registry_data:/registry_data
-      networks:
-        - registry_network
-    
-  registry_frontend:
-      image:  joxit/docker-registry-ui:2
-      container_name: registry_frontend
-      environment:
-        NGINX_PROXY_PASS_URL: http://registry_backend:5000
-        DELETE_IMAGES=true: true
-        REGISTRY_TITLE: registry-paymybuddy
-      ports:
-        - 8282:80 
-      networks:
-        - registry_network
-      depends_on:
-        - registry_backend
 
 volumes:
   db-data:
-  registry_data:
 
 networks:
       paymybuddy-network:
         driver: bridge
-      registry_network:
-        driver: bridge
-
+     
