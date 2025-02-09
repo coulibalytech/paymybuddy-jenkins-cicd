@@ -18,7 +18,7 @@ This POC demonstrates the deployment of the *PayMyBuddy* app using Docker contai
 - Creat CI/CD Pipeline with Jenkins
 - Check Quality of Code with SonarCloud
 
-## **Steps of the CI/CD Pipeline**
+## **Steps of the CI/CD Pipeline Jenkins**
 
 The pipeline must include the following steps, and the steps must be executed with a Docker-based agent:
 
