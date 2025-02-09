@@ -1,5 +1,5 @@
 
-# PayMyBuddy - Financial Transaction Application - Jenkins
+# PayMyBuddy - Financial Transaction Application - Jenkins CI/CD
 
 This repository contains the *PayMyBuddy* application, which allows users to manage financial transactions. It includes a Spring Boot backend and MySQL database.
 
