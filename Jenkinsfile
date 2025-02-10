@@ -4,7 +4,8 @@
 pipeline{
           environment{
               DOCKER-COMPOSE = "docker-compose.yml"
-              IMAGE_NAME = "paymybuddy"
+              IMAGE_NAME_DB = "paymybuddy-db"
+              IMAGE_NAME_BACKEND = "paymybuddy-backend"     
               IMAGE_TAG = "v1.0"
               STAGING = "coulibaltech-staging"
               PRODUCTION = "coulibaltech-production"
@@ -37,42 +38,40 @@ pipeline{
                                 sudo apt-get install docker-compose-plugin
                                 chmod +x $DOCKER_CONFIG/cli-plugins/docker-compose
                                 docker compose version
-                                docker-compose -f ${DOCKER_COMPOSE_FILE} up -d
                                '''
                         }
                     }
                     
                 }            
-                stage("Build image") {
+                stage("Build image and Run container") {
                     agent any
                     steps{
-                        echo "========executing Build image========"
-                        script{
-                            sh 'docker build -t $REPOSITORY_NAME/$IMAGE_NAME:$IMAGE_TAG .'
-                        }
-                    }
-                    
-                }
-                stage("Run container based on builded image") {
-                    agent any
-                    steps{
-                        echo "========executing Run container based on builded image========"
+                        echo "========executing Build image and Run container========"
                         script{
                             sh '''
-                            docker run --name $IMAGE_NAME -d -p 81:80 -e PORT=80 $REPOSITORY_NAME/$IMAGE_NAME:$IMAGE_TAG
-                            sleep 5
-
-                                '''
+                                  docker-compose -f ${DOCKER_COMPOSE_FILE} up -d
+                                  sleep 5
+                              '''
                         }
                     }
                     
                 }
-                stage("Test image") {
+                 stage("Test image paymybuddy database") {
                     agent any
                     steps{
-                        echo "========executing Test image========"
+                        echo "========executing Test image paymybuddy database========"
                         script{
-                            sh 'curl http://172.17.0.1:81 | grep -q "Dimension"'
+                            sh 'nc -zv 172.17.0.1 3306'
+                        }
+                    }
+                    
+                }
+                stage("Test image paymybuddy backend") {
+                    agent any
+                    steps{
+                        echo "========executing Test image paymybuddy backend========"
+                        script{
+                            sh 'curl http://172.17.0.1:8181 | grep -q "Pay My Buddy"'
                         }
                     }
                     
@@ -91,12 +90,13 @@ pipeline{
 
                 }
 
-                stage('Push Image in docker hub') {
+                stage('Push Images(DB & Backend) in docker hub') {
                         agent any
                         steps {
                             script {
                                 echo "Pousser l'image Docker vers le registre..."
-                                sh "docker push ${REPOSITORY_NAME}/${IMAGE_NAME}:${IMAGE_TAG}"
+                                sh "docker push ${REPOSITORY_NAME}/${IMAGE_NAME_DB}:${IMAGE_TAG}"
+                                sh "docker push ${REPOSITORY_NAME}/${IMAGE_NAME_BACKEND}:${IMAGE_TAG}"
                                 sh "docker logout"      
                             }
                         }
@@ -108,8 +108,10 @@ pipeline{
                       echo "========executing Clean container========"
                       script{
                         sh '''
-                        docker stop ${IMAGE_NAME}
-                        docker rm -f ${IMAGE_NAME}
+                        docker stop ${IMAGE_NAME_DB}
+                        docker stop ${IMAGE_NAME_BACKEND}
+                        docker rm -f ${IMAGE_NAME_DB}
+                        docker rm -f ${IMAGE_NAME_BACKEND}
                           '''
                        }
                    }
@@ -131,9 +133,9 @@ pipeline{
                                sh """
                                # defining remote commands
                                remote_cmds="
-                               docker pull ${REPOSITORY_NAME}/${IMAGE_NAME}:${IMAGE_TAG} &&
-                               docker rm -f staging_${IMAGE_NAME} || true && 
-                               docker run --name staging_${IMAGE_NAME} -d -p 81:${STAGING_HTTP_PORT} -e PORT=${STAGING_HTTP_PORT} ${REPOSITORY_NAME}/${IMAGE_NAME}:${IMAGE_TAG}
+                               docker pull ${REPOSITORY_NAME}/${IMAGE_NAME_DB}:${IMAGE_TAG} &&
+                               docker rm -f staging_${IMAGE_NAME_DB} || true && 
+                               docker run --name staging_${IMAGE_NAME_DB} -d -p 81:${STAGING_HTTP_PORT} -e PORT=${STAGING_HTTP_PORT} ${REPOSITORY_NAME}/${IMAGE_NAME_DB}:${IMAGE_TAG}
                                "
                                # executing remote commands
                                ssh -o StrictHostKeyChecking=no ${STAGING_USER}@${STAGING_IP} "\$remote_cmds"
@@ -170,9 +172,9 @@ pipeline{
                              sh """
                                # defining remote commands
                                remote_cmds="
-                               docker pull ${REPOSITORY_NAME}/${IMAGE_NAME}:${IMAGE_TAG} &&
-                               docker rm -f production_${IMAGE_NAME} || true && 
-                               docker run --name production_${IMAGE_NAME} -d -p 81:${PRODUCTION_HTTP_PORT} -e PORT=${PRODUCTION_HTTP_PORT} ${REPOSITORY_NAME}/${IMAGE_NAME}:${IMAGE_TAG}
+                               docker pull ${REPOSITORY_NAME}/${IMAGE_NAME_DB}:${IMAGE_TAG} &&
+                               docker rm -f production_${IMAGE_NAME_DB} || true && 
+                               docker run --name production_${IMAGE_NAME_DB} -d -p 81:${PRODUCTION_HTTP_PORT} -e PORT=${PRODUCTION_HTTP_PORT} ${REPOSITORY_NAME}/${IMAGE_NAME_DB}:${IMAGE_TAG}
                                "
                                # executing remote commands
                                ssh -o StrictHostKeyChecking=no ${PRODUCTION_USER}@${PRODUCTION_IP} "\$remote_cmds"
