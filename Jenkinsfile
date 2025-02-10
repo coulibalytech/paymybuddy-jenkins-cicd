@@ -3,7 +3,6 @@
 
 pipeline{
           environment{
-              DOCKER-COMPOSE = "docker-compose.yml"
               IMAGE_NAME_DB = "paymybuddy-db"
               IMAGE_NAME_BACKEND = "paymybuddy-backend"     
               IMAGE_TAG = "v1.0"
@@ -27,31 +26,37 @@ pipeline{
               DOCKERHUB_CREDENTIALS = 'dockerhub-credentials-id'
           }
           agent none
-          stages{
-                stage("Start Docker Compose Services") {
+          stages{     
+                stage("Build image paymybuddy-db") {
                     agent any
                     steps{
-                        echo "========executing Start Docker Compose Services========"
+                        echo "========executing Build image paymybuddy-db========"
                         script{
-                             sh '''
-                                sudo apt-get update
-                                sudo apt-get install docker-compose-plugin
-                                chmod +x $DOCKER_CONFIG/cli-plugins/docker-compose
-                                docker compose version
-                               '''
+                            sh "docker build -f Dockerfile -t paymybuddy-db --target paymybuddy-db ."
                         }
                     }
                     
-                }            
-                stage("Build image and Run container") {
+                }
+                 stage("Run container based on builded image paymybuddy-db") {
                     agent any
                     steps{
-                        echo "========executing Build image and Run container========"
+                        echo "========executing Run container based on builded image paymybuddy-db========"
                         script{
                             sh '''
-                                  docker-compose -f ${DOCKER_COMPOSE_FILE} up -d
-                                  sleep 5
-                              '''
+                            docker run --name $IMAGE_NAME -d -p 81:80 -e PORT=80 $REPOSITORY_NAME/$IMAGE_NAME:$IMAGE_TAG
+                            sleep 5
+
+                                '''
+                        }
+                    }
+                    
+                }    
+                stage("Build image paymybuddy-backend") {
+                    agent any
+                    steps{
+                        echo "========executing Build image paymybuddy-db========"
+                        script{
+                            sh "docker build -f Dockerfile -t paymybuddy-backend --target paymybuddy-backend ."
                         }
                     }
                     
