@@ -1,10 +1,10 @@
 #Use mysql 8 image
 FROM mysql:8.0 AS build-paymybuddy-db
 # Environement variable
-ENV  MYSQL_ROOT_PASSWORD$={MYSQL_ROOT_PASSWORD} \
-     MYSQL_DATABASE=db_paymybuddy \
-     MYSQL_USER=${MYSQL_USER} \
-     MYSQL_PASSWORD=${MYSQL_PASSWORD}
+ENV  MYSQL_ROOT_PASSWORD$={MYSQL_ROOT_PASSWORD} 
+ENV  MYSQL_DATABASE=db_paymybuddy 
+ENV  MYSQL_USER=${MYSQL_USER} 
+ENV  MYSQL_PASSWORD=${MYSQL_PASSWORD}
 # Expose the application port
 EXPOSE 3306
 # Volume 
@@ -18,9 +18,9 @@ WORKDIR /app
 # Copy the JAR file from the local machine to the container
 COPY ./target/paymybuddy.jar paymybuddy.jar
 # Env variable
-ENV  SPRING_DATASOURCE_URL=jdbc:mysql://paymybuddy-db:3306/db_paymybuddy \
-     SPRING_DATASOURCE_USERNAME=${MYSQL_USER}
-     SPRING_DATASOURCE_PASSWORD=${MYSQL_PASSWORD}
+ENV  SPRING_DATASOURCE_URL=jdbc:mysql://paymybuddy-db:3306/db_paymybuddy 
+ENV  SPRING_DATASOURCE_USERNAME=${MYSQL_USER}
+ENV  SPRING_DATASOURCE_PASSWORD=${MYSQL_PASSWORD}
 # Expose the application port (in this case, port 8080)
 EXPOSE 8080
 # Command to run the JAR file
