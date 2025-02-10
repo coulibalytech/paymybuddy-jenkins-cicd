@@ -1,5 +1,5 @@
 #Use mysql 8 image
-FROM mysql:8.0 AS paymybuddy-db
+FROM mysql:8.0 AS build-paymybuddy-db
 # Environement variable
 ENV  MYSQL_ROOT_PASSWORD$={MYSQL_ROOT_PASSWORD} \
      MYSQL_DATABASE=db_paymybuddy \
@@ -11,7 +11,7 @@ EXPOSE 3306
 COPY ./initdb /docker-entrypoint-initdb.d
 
 # Use Amazon Corretto base image with Java 17 on Alpine Linux
-FROM amazoncorretto:17-alpine AS paymybuddy-backend
+FROM amazoncorretto:17-alpine AS build-paymybuddy-backend
 RUN apk add --no-cache bash
 # Set the working directory inside the container
 WORKDIR /app
