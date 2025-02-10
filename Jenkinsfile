@@ -6,6 +6,7 @@ pipeline{
               IMAGE_NAME_DB = "paymybuddy-db"
               IMAGE_NAME_BACKEND = "paymybuddy-backend"     
               IMAGE_TAG = "v1.0"
+              ENV_FILE = "${WORKSPACE}/.env"
               STAGING = "coulibaltech-staging"
               PRODUCTION = "coulibaltech-production"
               REPOSITORY_NAME = "coulibalytech"
@@ -32,36 +33,35 @@ pipeline{
                     steps{
                         echo "========executing Build image paymybuddy-db========"
                         script{
-                            sh "docker build -f Dockerfile -t paymybuddy-db --target paymybuddy-db ."
+                            sh 'docker build -f Dockerfile -t $REPOSITORY_NAME/$IMAGE_NAME_DB --target build-paymybuddy-db .'
                         }
                     }
                     
                 }
-                 stage("Run container based on builded image paymybuddy-db") {
+                stage("Run container based on builded image paymybuddy-db") {
                     agent any
                     steps{
                         echo "========executing Run container based on builded image paymybuddy-db========"
                         script{
                             sh '''
-                            docker run --name $IMAGE_NAME -d -p 81:80 -e PORT=80 $REPOSITORY_NAME/$IMAGE_NAME:$IMAGE_TAG
-                            sleep 5
+                            docker run --name $IMAGE_NAME_DB -d \
+                                       --restart always \
+                                       --network paymybuddy-network \
+                                        -e MYSQL_ROOT_PASSWORD=${env.MYSQL_ROOT_PASSWORD} \
+                                        -e MYSQL_DATABASE=db_paymybuddy \
+                                        -e MYSQL_USER=${env.MYSQL_USER} \
+                                        -e MYSQL_PASSWORD=${env.MYSQL_PASSWORD} \
+                                        -p 3306:3306 \
+                                        -v db-data:/var/lib/mysql \
+                                        -v ./initdb:/docker-entrypoint-initdb.d $REPOSITORY_NAME/$IMAGE_NAME_DB:$IMAGE_TAG
+                             sleep 5
 
                                 '''
                         }
                     }
                     
                 }    
-                stage("Build image paymybuddy-backend") {
-                    agent any
-                    steps{
-                        echo "========executing Build image paymybuddy-db========"
-                        script{
-                            sh "docker build -f Dockerfile -t paymybuddy-backend --target paymybuddy-backend ."
-                        }
-                    }
-                    
-                }
-                 stage("Test image paymybuddy database") {
+                stage("Test image paymybuddy database") {
                     agent any
                     steps{
                         echo "========executing Test image paymybuddy database========"
@@ -71,6 +71,38 @@ pipeline{
                     }
                     
                 }
+                stage("Build image paymybuddy-backend") {
+                    agent any
+                    steps{
+                        echo "========executing Build image paymybuddy-db========"
+                        script{
+                            sh 'docker build -f Dockerfile -t $REPOSITORY_NAME/$IMAGE_NAME_BACKEND --target paymybuddy-backend .'
+                        }
+                    }
+                    
+                }
+                stage("Run container based on builded image paymybuddy-backend") {
+                    agent any
+                    steps{
+                        echo "========executing Run container based on builded image paymybuddy-db========"
+                        script{
+                            sh '''
+                            docker run --name $IMAGE_NAME_BACKEND -d \
+                                       --restart always \
+                                       --network paymybuddy-network \
+                                        -e SPRING_DATASOURCE_URL=jdbc:mysql://paymybuddy-db:3306/db_paymybuddy \
+                                        -e SPRING_DATASOURCE_USERNAME=${env.MYSQL_USER} \
+                                        -e SPRING_DATASOURCE_PASSWORD=${env.MYSQL_PASSWORD} \
+                                        -e MYSQL_PASSWORD=${env.MYSQL_PASSWORD} \
+                                        -p 8181:8080 $REPOSITORY_NAME/$IMAGE_NAME_BACKEND:$IMAGE_TAG
+                             
+                             sleep 5
+
+                                '''
+                        }
+                    }
+                    
+                }    
                 stage("Test image paymybuddy backend") {
                     agent any
                     steps{
@@ -138,9 +170,26 @@ pipeline{
                                sh """
                                # defining remote commands
                                remote_cmds="
-                               docker pull ${REPOSITORY_NAME}/${IMAGE_NAME_DB}:${IMAGE_TAG} &&
-                               docker rm -f staging_${IMAGE_NAME_DB} || true && 
-                               docker run --name staging_${IMAGE_NAME_DB} -d -p 81:${STAGING_HTTP_PORT} -e PORT=${STAGING_HTTP_PORT} ${REPOSITORY_NAME}/${IMAGE_NAME_DB}:${IMAGE_TAG}
+                               docker pull ${REPOSITORY_NAME}/${IMAGE_NAME_DB}:${IMAGE_TAG} && docker pull ${REPOSITORY_NAME}/${IMAGE_NAME_BACKEND}:${IMAGE_TAG} &&
+                               docker rm -f staging_${IMAGE_NAME_DB} || true &&   docker rm -f staging_${IMAGE_NAME_BACKEND} || true &&
+                               docker run --name staging_${IMAGE_NAME_DB} -d \
+                                       --restart always \
+                                       --network paymybuddy-network \
+                                        -e MYSQL_ROOT_PASSWORD=${env.MYSQL_ROOT_PASSWORD} \
+                                        -e MYSQL_DATABASE=db_paymybuddy \
+                                        -e MYSQL_USER=${env.MYSQL_USER} \
+                                        -e MYSQL_PASSWORD=${env.MYSQL_PASSWORD} \
+                                        -p 3306:3306 \
+                                        -v db-data:/var/lib/mysql \
+                                        -v ./initdb:/docker-entrypoint-initdb.d $REPOSITORY_NAME/$IMAGE_NAME_DB:$IMAGE_TAG
+                               docker run --name staging_$IMAGE_NAME_BACKEND -d \
+                                       --restart always \
+                                       --network paymybuddy-network \
+                                        -e SPRING_DATASOURCE_URL=jdbc:mysql://paymybuddy-db:3306/db_paymybuddy \
+                                        -e SPRING_DATASOURCE_USERNAME=${env.MYSQL_USER} \
+                                        -e SPRING_DATASOURCE_PASSWORD=${env.MYSQL_PASSWORD} \
+                                        -e MYSQL_PASSWORD=${env.MYSQL_PASSWORD} \
+                                        -p 8181:8080 $REPOSITORY_NAME/$IMAGE_NAME_BACKEND:$IMAGE_TAG
                                "
                                # executing remote commands
                                ssh -o StrictHostKeyChecking=no ${STAGING_USER}@${STAGING_IP} "\$remote_cmds"
@@ -156,7 +205,7 @@ pipeline{
                     steps{
                         echo "========executing Test staging========"
                         script{
-                            sh 'curl http://${STAGING_IP}:81 | grep -q "Dimension"'
+                            sh 'curl http://${STAGING_IP}:8181 | grep -q "Pay My Buddy"'
                         }
                     }
                     
@@ -177,9 +226,26 @@ pipeline{
                              sh """
                                # defining remote commands
                                remote_cmds="
-                               docker pull ${REPOSITORY_NAME}/${IMAGE_NAME_DB}:${IMAGE_TAG} &&
-                               docker rm -f production_${IMAGE_NAME_DB} || true && 
-                               docker run --name production_${IMAGE_NAME_DB} -d -p 81:${PRODUCTION_HTTP_PORT} -e PORT=${PRODUCTION_HTTP_PORT} ${REPOSITORY_NAME}/${IMAGE_NAME_DB}:${IMAGE_TAG}
+                               docker pull ${REPOSITORY_NAME}/${IMAGE_NAME_DB}:${IMAGE_TAG} && docker pull ${REPOSITORY_NAME}/${IMAGE_NAME_BACKEND}:${IMAGE_TAG} &&
+                               docker rm -f production_${IMAGE_NAME_DB} || true &&   docker rm -f production_${IMAGE_NAME_BACKEND} || true &&
+                               docker run --name production_${IMAGE_NAME_DB} -d \
+                                       --restart always \
+                                       --network paymybuddy-network \
+                                        -e MYSQL_ROOT_PASSWORD=${env.MYSQL_ROOT_PASSWORD} \
+                                        -e MYSQL_DATABASE=db_paymybuddy \
+                                        -e MYSQL_USER=${env.MYSQL_USER} \
+                                        -e MYSQL_PASSWORD=${env.MYSQL_PASSWORD} \
+                                        -p 3306:3306 \
+                                        -v db-data:/var/lib/mysql \
+                                        -v ./initdb:/docker-entrypoint-initdb.d $REPOSITORY_NAME/$IMAGE_NAME_DB:$IMAGE_TAG
+                               docker run --name production_$IMAGE_NAME_BACKEND -d \
+                                       --restart always \
+                                       --network paymybuddy-network \
+                                        -e SPRING_DATASOURCE_URL=jdbc:mysql://paymybuddy-db:3306/db_paymybuddy \
+                                        -e SPRING_DATASOURCE_USERNAME=${env.MYSQL_USER} \
+                                        -e SPRING_DATASOURCE_PASSWORD=${env.MYSQL_PASSWORD} \
+                                        -e MYSQL_PASSWORD=${env.MYSQL_PASSWORD} \
+                                        -p 8181:8080 $REPOSITORY_NAME/$IMAGE_NAME_BACKEND:$IMAGE_TAG
                                "
                                # executing remote commands
                                ssh -o StrictHostKeyChecking=no ${PRODUCTION_USER}@${PRODUCTION_IP} "\$remote_cmds"
@@ -195,7 +261,7 @@ pipeline{
                     steps{
                         echo "========executing Test staging========"
                         script{
-                            sh 'curl http://${PRODUCTION_IP}:81 | grep -q "Dimension"'
+                            sh 'curl http://${PRODUCTION_IP}:8181 | grep -q "Pay My Buddy"'
                         }
                     }
                     
