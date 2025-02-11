@@ -63,16 +63,6 @@ pipeline{
                     }
                     
                 }    
-                stage("Test image paymybuddy database") {
-                    agent any
-                    steps{
-                        echo "========executing Test image paymybuddy database========"
-                        script{
-                            sh 'nc -zv 172.17.0.1 3306'
-                        }
-                    }
-                    
-                }
                 stage("Build image paymybuddy-backend") {
                     agent any
                     steps{
