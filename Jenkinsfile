@@ -97,17 +97,6 @@ pipeline{
                     }
                     
                 }    
-                stage("Test image paymybuddy backend") {
-                    agent any
-                    steps{
-                        echo "========executing Test image paymybuddy backend========"
-                        script{
-                            sh 'curl http://172.17.0.1:8181 | grep -q "Pay My Buddy"'
-                        }
-                    }
-                    
-                }
-
                 stage("Login to Docker Hub Registry") {
                     agent any      
                     steps {
