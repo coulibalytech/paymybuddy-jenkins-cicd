@@ -33,7 +33,7 @@ pipeline{
                     steps{
                         echo "========executing Build image paymybuddy-db========"
                         script{
-                            sh 'docker build -f Dockerfile -t $REPOSITORY_NAME/$IMAGE_NAME_DB --target build-paymybuddy-db .'
+                            sh 'docker build -t $REPOSITORY_NAME/$IMAGE_NAME_DB --target build-paymybuddy-db .'
                         }
                     }
                     
