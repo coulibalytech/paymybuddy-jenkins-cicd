@@ -44,6 +44,7 @@ pipeline{
                         echo "========executing Run container based on builded image paymybuddy-db========"
                         script{
                             sh '''
+                            docker create network paymybuddy-network
                             docker run --name $IMAGE_NAME_DB -d \
                                        --restart always \
                                        --network paymybuddy-network \
@@ -87,6 +88,7 @@ pipeline{
                         echo "========executing Run container based on builded image paymybuddy-db========"
                         script{
                             sh '''
+                            docker create network paymybuddy-network
                             docker run --name $IMAGE_NAME_BACKEND -d \
                                        --restart always \
                                        --network paymybuddy-network \
