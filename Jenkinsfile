@@ -44,7 +44,7 @@ pipeline{
                         echo "========executing Run container based on builded image paymybuddy-db========"
                         script{
                             sh '''
-                            sudo docker run --name $IMAGE_NAME_DB -d \
+                            docker run --name $IMAGE_NAME_DB -d \
                                        --restart always \
                                        --network paymybuddy-network \
                                         -e MYSQL_ROOT_PASSWORD=${env.MYSQL_ROOT_PASSWORD} \
@@ -76,7 +76,7 @@ pipeline{
                     steps{
                         echo "========executing Build image paymybuddy-db========"
                         script{
-                            sh 'sudo docker build -f Dockerfile -t $REPOSITORY_NAME/$IMAGE_NAME_BACKEND --target paymybuddy-backend .'
+                            sh 'docker build -f Dockerfile -t $REPOSITORY_NAME/$IMAGE_NAME_BACKEND --target paymybuddy-backend .'
                         }
                     }
                     
@@ -87,7 +87,7 @@ pipeline{
                         echo "========executing Run container based on builded image paymybuddy-db========"
                         script{
                             sh '''
-                            sudo docker run --name $IMAGE_NAME_BACKEND -d \
+                            docker run --name $IMAGE_NAME_BACKEND -d \
                                        --restart always \
                                        --network paymybuddy-network \
                                         -e SPRING_DATASOURCE_URL=jdbc:mysql://paymybuddy-db:3306/db_paymybuddy \
