@@ -44,6 +44,7 @@ pipeline{
                         echo "========executing Run container based on builded image paymybuddy-db========"
                         script{
                             sh '''
+                            docker network rm paymybuddy-network 2>/dev/null || true
                             docker network create paymybuddy-network
                             docker run --name $IMAGE_NAME_DB -d \
                                        --restart always \
@@ -88,6 +89,7 @@ pipeline{
                         echo "========executing Run container based on builded image paymybuddy-db========"
                         script{
                             sh '''
+                            docker network rm paymybuddy-network 2>/dev/null || true
                             docker network create paymybuddy-network
                             docker run --name $IMAGE_NAME_BACKEND -d \
                                        --restart always \
@@ -172,6 +174,7 @@ pipeline{
                                sh """
                                # defining remote commands
                                remote_cmds="
+                               docker network rm paymybuddy-network 2>/dev/null || true &&
                                docker network create paymybuddy-network &&
                                docker pull ${REPOSITORY_NAME}/${IMAGE_NAME_DB}:${IMAGE_TAG} && docker pull ${REPOSITORY_NAME}/${IMAGE_NAME_BACKEND}:${IMAGE_TAG} &&
                                docker rm -f staging_${IMAGE_NAME_DB} || true &&   docker rm -f staging_${IMAGE_NAME_BACKEND} || true &&
@@ -229,6 +232,7 @@ pipeline{
                              sh """
                                # defining remote commands
                                remote_cmds="
+                               docker network rm paymybuddy-network 2>/dev/null || true &&
                                docker network create paymybuddy-network &&
                                docker pull ${REPOSITORY_NAME}/${IMAGE_NAME_DB}:${IMAGE_TAG} && docker pull ${REPOSITORY_NAME}/${IMAGE_NAME_BACKEND}:${IMAGE_TAG} &&
                                docker rm -f production_${IMAGE_NAME_DB} || true &&   docker rm -f production_${IMAGE_NAME_BACKEND} || true &&
