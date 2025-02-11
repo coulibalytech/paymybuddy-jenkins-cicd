@@ -47,10 +47,10 @@ pipeline{
                             docker run --name $IMAGE_NAME_DB -d \
                                        --restart always \
                                        --network paymybuddy-network \
-                                        -e MYSQL_ROOT_PASSWORD=${env.MYSQL_ROOT_PASSWORD} \
+                                        -e MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD} \
                                         -e MYSQL_DATABASE=db_paymybuddy \
-                                        -e MYSQL_USER=${env.MYSQL_USER} \
-                                        -e MYSQL_PASSWORD=${env.MYSQL_PASSWORD} \
+                                        -e MYSQL_USER=${MYSQL_USER} \
+                                        -e MYSQL_PASSWORD=${MYSQL_PASSWORD} \
                                         -p 3306:3306 \
                                         -v db-data:/var/lib/mysql \
                                         -v ./initdb:/docker-entrypoint-initdb.d $REPOSITORY_NAME/$IMAGE_NAME_DB:$IMAGE_TAG
@@ -91,9 +91,9 @@ pipeline{
                                        --restart always \
                                        --network paymybuddy-network \
                                         -e SPRING_DATASOURCE_URL=jdbc:mysql://paymybuddy-db:3306/db_paymybuddy \
-                                        -e SPRING_DATASOURCE_USERNAME=${env.MYSQL_USER} \
-                                        -e SPRING_DATASOURCE_PASSWORD=${env.MYSQL_PASSWORD} \
-                                        -e MYSQL_PASSWORD=${env.MYSQL_PASSWORD} \
+                                        -e SPRING_DATASOURCE_USERNAME=${MYSQL_USER} \
+                                        -e SPRING_DATASOURCE_PASSWORD=${MYSQL_PASSWORD} \
+                                        -e MYSQL_PASSWORD=${MYSQL_PASSWORD} \
                                         -p 8181:8080 $REPOSITORY_NAME/$IMAGE_NAME_BACKEND:$IMAGE_TAG
                              
                              sleep 5
@@ -175,10 +175,10 @@ pipeline{
                                docker run --name staging_${IMAGE_NAME_DB} -d \
                                        --restart always \
                                        --network paymybuddy-network \
-                                        -e MYSQL_ROOT_PASSWORD=${env.MYSQL_ROOT_PASSWORD} \
+                                        -e MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD} \
                                         -e MYSQL_DATABASE=db_paymybuddy \
-                                        -e MYSQL_USER=${env.MYSQL_USER} \
-                                        -e MYSQL_PASSWORD=${env.MYSQL_PASSWORD} \
+                                        -e MYSQL_USER=${MYSQL_USER} \
+                                        -e MYSQL_PASSWORD=${MYSQL_PASSWORD} \
                                         -p 3306:3306 \
                                         -v db-data:/var/lib/mysql \
                                         -v ./initdb:/docker-entrypoint-initdb.d $REPOSITORY_NAME/$IMAGE_NAME_DB:$IMAGE_TAG
@@ -186,9 +186,9 @@ pipeline{
                                        --restart always \
                                        --network paymybuddy-network \
                                         -e SPRING_DATASOURCE_URL=jdbc:mysql://paymybuddy-db:3306/db_paymybuddy \
-                                        -e SPRING_DATASOURCE_USERNAME=${env.MYSQL_USER} \
-                                        -e SPRING_DATASOURCE_PASSWORD=${env.MYSQL_PASSWORD} \
-                                        -e MYSQL_PASSWORD=${env.MYSQL_PASSWORD} \
+                                        -e SPRING_DATASOURCE_USERNAME=${MYSQL_USER} \
+                                        -e SPRING_DATASOURCE_PASSWORD=${MYSQL_PASSWORD} \
+                                        -e MYSQL_PASSWORD=${MYSQL_PASSWORD} \
                                         -p 8181:8080 $REPOSITORY_NAME/$IMAGE_NAME_BACKEND:$IMAGE_TAG
                                "
                                # executing remote commands
@@ -231,10 +231,10 @@ pipeline{
                                docker run --name production_${IMAGE_NAME_DB} -d \
                                        --restart always \
                                        --network paymybuddy-network \
-                                        -e MYSQL_ROOT_PASSWORD=${env.MYSQL_ROOT_PASSWORD} \
+                                        -e MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD} \
                                         -e MYSQL_DATABASE=db_paymybuddy \
-                                        -e MYSQL_USER=${env.MYSQL_USER} \
-                                        -e MYSQL_PASSWORD=${env.MYSQL_PASSWORD} \
+                                        -e MYSQL_USER=${MYSQL_USER} \
+                                        -e MYSQL_PASSWORD=${MYSQL_PASSWORD} \
                                         -p 3306:3306 \
                                         -v db-data:/var/lib/mysql \
                                         -v ./initdb:/docker-entrypoint-initdb.d $REPOSITORY_NAME/$IMAGE_NAME_DB:$IMAGE_TAG
@@ -242,9 +242,9 @@ pipeline{
                                        --restart always \
                                        --network paymybuddy-network \
                                         -e SPRING_DATASOURCE_URL=jdbc:mysql://paymybuddy-db:3306/db_paymybuddy \
-                                        -e SPRING_DATASOURCE_USERNAME=${env.MYSQL_USER} \
-                                        -e SPRING_DATASOURCE_PASSWORD=${env.MYSQL_PASSWORD} \
-                                        -e MYSQL_PASSWORD=${env.MYSQL_PASSWORD} \
+                                        -e SPRING_DATASOURCE_USERNAME=${MYSQL_USER} \
+                                        -e SPRING_DATASOURCE_PASSWORD=${MYSQL_PASSWORD} \
+                                        -e MYSQL_PASSWORD=${MYSQL_PASSWORD} \
                                         -p 8181:8080 $REPOSITORY_NAME/$IMAGE_NAME_BACKEND:$IMAGE_TAG
                                "
                                # executing remote commands
