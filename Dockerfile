@@ -1,20 +1,17 @@
 #Use mysql 8 image
 FROM mysql:8.0 AS build-paymybuddy-db
-# Déclarer une variable pour la phase de construction
-ARG MYSQL_ROOT_PASSWORD
-ARG MYSQL_PASSWORD
-ARG MYSQL_USER
-ARG MYSQL_DATABASE
 
 # Environement variable
-ENV MYSQL_ROOT_PASSWORD$={MYSQL_ROOT_PASSWORD} 
+ENV MYSQL_ROOT_PASSWORD$=root_password 
 ENV MYSQL_DATABASE=db_paymybuddy 
-ENV MYSQL_USER=${MYSQL_USER} 
-ENV MYSQL_PASSWORD=${MYSQL_PASSWORD}
-# Expose the application port
-EXPOSE 3306
+ENV MYSQL_USER=paymybuddy_user 
+ENV MYSQL_PASSWORD=secure_password
+
 # Volume 
 COPY ./initdb /docker-entrypoint-initdb.d
+# Expose the application port
+EXPOSE 3306
+
 
 # Use Amazon Corretto base image with Java 17 on Alpine Linux
 FROM amazoncorretto:17-alpine AS build-paymybuddy-backend
