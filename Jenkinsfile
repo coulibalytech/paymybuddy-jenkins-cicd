@@ -45,7 +45,9 @@ pipeline{
                       steps {
                           script {
                               echo "Testing the DB connection on 3306"
-                              sh "mysql -h 172.17.0.1 -P 3306 -u paymybuddy_user -p"
+                              sh """ apt install mysql-client 
+                                     mysql -h 172.17.0.1 -P 3306 -u paymybuddy_user -p
+                                 """
           
                               echo "Testing backend availability on 8181"
                               sh "curl -s http://172.17.0.1:8181 | grep -q 'Pay My Buddy'"
