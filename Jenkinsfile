@@ -79,8 +79,6 @@ pipeline{
                         echo "========executing Run container based on builded image paymybuddy-db========"
                         script{
                             sh '''
-                            docker network rm paymybuddy-network 2>/dev/null || true
-                            docker network create paymybuddy-network
                             docker run --name $IMAGE_NAME_BACKEND -d \
                                        --restart always \
                                        --network paymybuddy-network \
