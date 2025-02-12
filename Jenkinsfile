@@ -31,33 +31,27 @@ pipeline{
                 stage("Build image paymybuddy-db and backend with Docker compose") {
                     agent any
                     steps{
-                        echo "========executing Build images db and backend========"
                         script{
-                            sh 'docker compose up -d'
+                           echo "Building Docker images (DB + Backend)"
+                              sh """
+                                  docker compose up -d --build
+                              """
                         }
                     }
                     
                 }
-                stage("Test image paymybuddy-bd") {
-                    agent any
-                    steps{
-                        echo "========executing Test image paymybuddy-bd========"
-                        script{
-                            sh 'nc -zv 172.17.0.1 3306'
-                        }
-                    }
-                    
+                stage("Test Docker Images") {
+                      agent any
+                      steps {
+                          script {
+                              echo "Testing the DB connection on 3306"
+                              sh "nc -zv 172.17.0.1 3306"
+          
+                              echo "Testing backend availability on 8181"
+                              sh "curl -s http://172.17.0.1:8181 | grep -q 'Pay My Buddy'"
+                          }
+                      }
                 }
-                stage("Test image paymybuddy-backend") {
-                    agent any
-                    steps{
-                        echo "========executing Test image paymybuddy-backend========"
-                        script{
-                            sh 'curl http://172.17.0.1:8181 | grep -q "Pay My Buddy"'
-                        }
-                    }
-                    
-                }   
                 stage("Login to Docker Hub Registry") {
                     agent any      
                     steps {
