@@ -1,12 +1,6 @@
 #Use mysql 8 image
 FROM mysql:8.0 AS build-paymybuddy-db
 
-# Environement variable
-ENV MYSQL_ROOT_PASSWORD$=root_password 
-ENV MYSQL_DATABASE=db_paymybuddy 
-ENV MYSQL_USER=paymybuddy_user 
-ENV MYSQL_PASSWORD=secure_password
-
 # Volume 
 COPY ./initdb /docker-entrypoint-initdb.d
 # Expose the application port
