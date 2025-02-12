@@ -33,7 +33,7 @@ pipeline{
                     steps{
                         echo "========executing Build images db and backend========"
                         script{
-                            sh 'docker build -f Dockerfile -t $REPOSITORY_NAME/$IMAGE_NAME_DB --target build-paymybuddy-db .'
+                            sh 'docker compose up -d'
                         }
                     }
                     
