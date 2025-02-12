@@ -46,7 +46,7 @@ pipeline{
                             sh '''
                             docker network rm paymybuddy-network 2>/dev/null || true
                             docker network create paymybuddy-network
-                            docker run --name staging_${IMAGE_NAME_DB} -d \
+                            docker run --name ${IMAGE_NAME_DB} -d \
                                        --network paymybuddy-network \
                                         -e MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD} \
                                         -e MYSQL_DATABASE=db_paymybuddy \
