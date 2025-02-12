@@ -35,7 +35,7 @@ pipeline{
                            echo "Building Docker images (DB + Backend)"
                               sh """
                                   docker compose up -d --build
-                                  sleep 5
+                                  sleep 10
                               """
                         }
                     }
@@ -51,7 +51,7 @@ pipeline{
                                  """*/
           
                               echo "Testing backend availability on 8181"
-                              sh 'curl http://192.168.56.17:8181/login | grep -q "Pay My Buddy"'
+                              sh 'curl http://192.168.56.17:8181 | grep -q "Pay My Buddy"'
                           }
                       }
                 }
