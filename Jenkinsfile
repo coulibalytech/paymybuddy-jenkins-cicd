@@ -45,7 +45,7 @@ pipeline{
                       steps {
                           script {
                               echo "Testing the DB connection on 3306"
-                              sh "nc -zv 172.17.0.1 3306"
+                              sh "ss -tuln | grep 3306"
           
                               echo "Testing backend availability on 8181"
                               sh "curl -s http://172.17.0.1:8181 | grep -q 'Pay My Buddy'"
