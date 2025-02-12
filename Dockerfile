@@ -1,5 +1,11 @@
 #Use mysql 8 image
 FROM mysql:8.0 AS build-paymybuddy-db
+# Déclarer une variable pour la phase de construction
+ARG MYSQL_ROOT_PASSWORD
+ARG MYSQL_PASSWORD
+ARG MYSQL_USER
+ARG MYSQL_DATABASE
+
 # Environement variable
 ENV MYSQL_ROOT_PASSWORD$={MYSQL_ROOT_PASSWORD} 
 ENV MYSQL_DATABASE=db_paymybuddy 
