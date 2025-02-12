@@ -45,13 +45,16 @@ pipeline{
                       agent any
                       steps {
                           script {
-                              echo "Testing the DB connection on 3306"
-                             /* sh """ apt install mysql-client 
-                                     mysql -h 172.17.0.1 -P 3306 -u paymybuddy_user -p
-                                 """*/
-          
+                             
                               echo "Testing backend availability on 8181"
-                              sh 'curl http://192.168.56.17:8181 | grep -q "Pay My Buddy"'
+                              def healthUrl = "http://192.168.56.17:8181/login"
+                              def response = httpRequest(url: healthUrl)
+
+                              if (response.status != 200) {
+                                  error("Application is not up! Health check failed with status ${response.status}")
+                              } else {
+                                  echo "Application is UP! Health check passed."
+                              }
                           }
                       }
                 }
