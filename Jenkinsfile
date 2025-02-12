@@ -28,35 +28,12 @@ pipeline{
           }
           agent none
           stages{     
-                stage("Build image paymybuddy-db") {
+                stage("Build image paymybuddy-db and backend with Docker compose") {
                     agent any
                     steps{
-                        echo "========executing Build image paymybuddy-db========"
+                        echo "========executing Build images db and backend========"
                         script{
                             sh 'docker build -f Dockerfile -t $REPOSITORY_NAME/$IMAGE_NAME_DB --target build-paymybuddy-db .'
-                        }
-                    }
-                    
-                }
-                stage("Run container based on builded image paymybuddy-db") {
-                    agent any
-                    steps{
-                        echo "========executing Run container based on builded image paymybuddy-db========"
-                        script{
-                            sh '''
-                            docker network rm paymybuddy-network 2>/dev/null || true
-                            docker network create paymybuddy-network
-                            docker run --name ${IMAGE_NAME_DB} -d \
-                                       --network paymybuddy-network \
-                                        -e MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD} \
-                                        -e MYSQL_DATABASE=db_paymybuddy \
-                                        -e MYSQL_USER=${MYSQL_USER} \
-                                        -e MYSQL_PASSWORD=${MYSQL_PASSWORD} \
-                                        -p 3306:3306 \
-                                        -v db-data:/var/lib/mysql \
-                                        -v ./initdb:/docker-entrypoint-initdb.d $REPOSITORY_NAME/$IMAGE_NAME_DB:$IMAGE_TAG
-                             sleep 5
-                                '''
                         }
                     }
                     
@@ -71,16 +48,6 @@ pipeline{
                     }
                     
                 }
-                stage("Build image paymybuddy-backend") {
-                    agent any
-                    steps{
-                        echo "========executing Build image paymybuddy-db========"
-                        script{
-                            sh 'docker build -f Dockerfile -t $REPOSITORY_NAME/$IMAGE_NAME_BACKEND --target  build-paymybuddy-backend .'
-                        }
-                    }
-                    
-                }
                 stage("Test image paymybuddy-backend") {
                     agent any
                     steps{
@@ -90,28 +57,7 @@ pipeline{
                         }
                     }
                     
-                }
-                stage("Run container based on builded image paymybuddy-backend") {
-                    agent any
-                    steps{
-                        echo "========executing Run container based on builded image paymybuddy-db========"
-                        script{
-                            sh '''
-                            docker run --name $IMAGE_NAME_BACKEND -d \
-                                       --network paymybuddy-network \
-                                        -e SPRING_DATASOURCE_URL=jdbc:mysql://paymybuddy-db:3306/db_paymybuddy \
-                                        -e SPRING_DATASOURCE_USERNAME=${MYSQL_USER} \
-                                        -e SPRING_DATASOURCE_PASSWORD=${MYSQL_PASSWORD} \
-                                        -e MYSQL_PASSWORD=${MYSQL_PASSWORD} \
-                                        -p 8181:8080 $REPOSITORY_NAME/$IMAGE_NAME_BACKEND:$IMAGE_TAG
-                             
-                             sleep 5
-
-                                '''
-                        }
-                    }
-                    
-                }    
+                }   
                 stage("Login to Docker Hub Registry") {
                     agent any      
                     steps {
