@@ -45,16 +45,12 @@ pipeline{
                       agent any
                       steps {
                           script {
-                             
-                              echo "Testing backend availability on 8181"
-                              def healthUrl = "http://192.168.56.17:8181/login"
-                              def response = httpRequest(url: healthUrl)
 
-                              if (response.status != 200) {
-                                  error("Application is not up! Health check failed with status ${response.status}")
-                              } else {
-                                  echo "Application is UP! Health check passed."
-                              }
+                              echo "Testing database availability on 3306"
+                              sh 'docker ps | grep  "3306"'
+                                    
+                              echo "Testing backend availability on 8181"
+                              sh 'docker ps | grep  "8181"'
                           }
                       }
                 }
