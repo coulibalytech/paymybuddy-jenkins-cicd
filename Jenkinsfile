@@ -57,18 +57,37 @@ pipeline{
                                         -v db-data:/var/lib/mysql \
                                         -v ./initdb:/docker-entrypoint-initdb.d $REPOSITORY_NAME/$IMAGE_NAME_DB:$IMAGE_TAG
                              sleep 5
-
                                 '''
                         }
                     }
                     
-                }    
+                }
+                stage("Test image paymybuddy-bd") {
+                    agent any
+                    steps{
+                        echo "========executing Test staging========"
+                        script{
+                            sh 'nc -zv 172.17.0.1 3306'
+                        }
+                    }
+                    
+                }
                 stage("Build image paymybuddy-backend") {
                     agent any
                     steps{
                         echo "========executing Build image paymybuddy-db========"
                         script{
                             sh 'docker build -f Dockerfile -t $REPOSITORY_NAME/$IMAGE_NAME_BACKEND --target  build-paymybuddy-backend .'
+                        }
+                    }
+                    
+                }
+                stage("Test image paymybuddy-backend") {
+                    agent any
+                    steps{
+                        echo "========executing Test staging========"
+                        script{
+                            sh 'curl http://172.17.0.1:8181 | grep -q "Pay My Buddy"'
                         }
                     }
                     
