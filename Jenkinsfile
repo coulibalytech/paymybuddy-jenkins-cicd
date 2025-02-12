@@ -46,15 +46,7 @@ pipeline{
                             sh '''
                             docker network rm paymybuddy-network 2>/dev/null || true
                             docker network create paymybuddy-network
-                            docker run --name $IMAGE_NAME_DB -d \
-                                       --network paymybuddy-network \
-                                        -e MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD} \
-                                        -e MYSQL_DATABASE=db_paymybuddy \
-                                        -e MYSQL_USER=${MYSQL_USER} \
-                                        -e MYSQL_PASSWORD=${MYSQL_PASSWORD} \
-                                        -p 3306:3306 \
-                                        -v db-data:/var/lib/mysql \
-                                        -v ./initdb:/docker-entrypoint-initdb.d $REPOSITORY_NAME/$IMAGE_NAME_DB:$IMAGE_TAG
+                            docker run --name $IMAGE_NAME_DB -d  --network paymybuddy-network -p 3306:3306 v db-data:/var/lib/mysql -v ./initdb:/docker-entrypoint-initdb.d $REPOSITORY_NAME/$IMAGE_NAME_DB:$IMAGE_TAG
                              sleep 5
                                 '''
                         }
