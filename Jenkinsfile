@@ -47,7 +47,6 @@ pipeline{
                             docker network rm paymybuddy-network 2>/dev/null || true
                             docker network create paymybuddy-network
                             docker run --name $IMAGE_NAME_DB -d \
-                                       --restart always \
                                        --network paymybuddy-network \
                                         -e MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD} \
                                         -e MYSQL_DATABASE=db_paymybuddy \
@@ -99,7 +98,6 @@ pipeline{
                         script{
                             sh '''
                             docker run --name $IMAGE_NAME_BACKEND -d \
-                                       --restart always \
                                        --network paymybuddy-network \
                                         -e SPRING_DATASOURCE_URL=jdbc:mysql://paymybuddy-db:3306/db_paymybuddy \
                                         -e SPRING_DATASOURCE_USERNAME=${MYSQL_USER} \
@@ -175,7 +173,6 @@ pipeline{
                                docker pull ${REPOSITORY_NAME}/${IMAGE_NAME_DB}:${IMAGE_TAG} && docker pull ${REPOSITORY_NAME}/${IMAGE_NAME_BACKEND}:${IMAGE_TAG} &&
                                docker rm -f staging_${IMAGE_NAME_DB} || true &&   docker rm -f staging_${IMAGE_NAME_BACKEND} || true &&
                                docker run --name staging_${IMAGE_NAME_DB} -d \
-                                       --restart always \
                                        --network paymybuddy-network \
                                         -e MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD} \
                                         -e MYSQL_DATABASE=db_paymybuddy \
@@ -185,7 +182,6 @@ pipeline{
                                         -v db-data:/var/lib/mysql \
                                         -v ./initdb:/docker-entrypoint-initdb.d $REPOSITORY_NAME/$IMAGE_NAME_DB:$IMAGE_TAG
                                docker run --name staging_$IMAGE_NAME_BACKEND -d \
-                                       --restart always \
                                        --network paymybuddy-network \
                                         -e SPRING_DATASOURCE_URL=jdbc:mysql://paymybuddy-db:3306/db_paymybuddy \
                                         -e SPRING_DATASOURCE_USERNAME=${MYSQL_USER} \
@@ -233,7 +229,6 @@ pipeline{
                                docker pull ${REPOSITORY_NAME}/${IMAGE_NAME_DB}:${IMAGE_TAG} && docker pull ${REPOSITORY_NAME}/${IMAGE_NAME_BACKEND}:${IMAGE_TAG} &&
                                docker rm -f production_${IMAGE_NAME_DB} || true &&   docker rm -f production_${IMAGE_NAME_BACKEND} || true &&
                                docker run --name production_${IMAGE_NAME_DB} -d \
-                                       --restart always \
                                        --network paymybuddy-network \
                                         -e MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD} \
                                         -e MYSQL_DATABASE=db_paymybuddy \
@@ -243,7 +238,6 @@ pipeline{
                                         -v db-data:/var/lib/mysql \
                                         -v ./initdb:/docker-entrypoint-initdb.d $REPOSITORY_NAME/$IMAGE_NAME_DB:$IMAGE_TAG
                                docker run --name production_$IMAGE_NAME_BACKEND -d \
-                                       --restart always \
                                        --network paymybuddy-network \
                                         -e SPRING_DATASOURCE_URL=jdbc:mysql://paymybuddy-db:3306/db_paymybuddy \
                                         -e SPRING_DATASOURCE_USERNAME=${MYSQL_USER} \
