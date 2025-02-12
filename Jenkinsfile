@@ -65,7 +65,7 @@ pipeline{
                 stage("Test image paymybuddy-bd") {
                     agent any
                     steps{
-                        echo "========executing Test staging========"
+                        echo "========executing Test image paymybuddy-bd========"
                         script{
                             sh 'nc -zv 172.17.0.1 3306'
                         }
@@ -85,7 +85,7 @@ pipeline{
                 stage("Test image paymybuddy-backend") {
                     agent any
                     steps{
-                        echo "========executing Test staging========"
+                        echo "========executing Test image paymybuddy-backend========"
                         script{
                             sh 'curl http://172.17.0.1:8181 | grep -q "Pay My Buddy"'
                         }
