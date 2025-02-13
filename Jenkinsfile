@@ -4,7 +4,8 @@
 pipeline{
           environment{
               IMAGE_NAME_DB = "paymybuddy-db"
-              IMAGE_NAME_BACKEND = "paymybuddy-paymybuddy-backend"     
+              IMAGE_NAME_BACKEND = "paymybuddy-paymybuddy-backend"
+              IMAGE_NAME_BACKEND_C = "paymybuddy-backend"
               IMAGE_TAG = "latest"
               ENV_FILE = "${WORKSPACE}/.env"
               STAGING = "coulibaltech-staging"
@@ -90,9 +91,9 @@ pipeline{
                       script{
                         sh '''
                         docker stop ${IMAGE_NAME_DB}
-                        docker stop ${IMAGE_NAME_BACKEND}
+                        docker stop ${IMAGE_NAME_BACKEND_C}
                         docker rm -f ${IMAGE_NAME_DB}
-                        docker rm -f ${IMAGE_NAME_BACKEND}
+                        docker rm -f ${IMAGE_NAME_BACKEND_C}
                           '''
                        }
                    }
