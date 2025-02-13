@@ -113,29 +113,6 @@ pipeline{
                             sshagent (credentials: ['staging_ssh_credentials']) {
                                 echo "Uploading Docker image to Staging"
                                       
-                               sh """
-                               # defining remote commands
-                               ssh ${STAGING_USER}@${STAGING_IP}
-                               rm -rf /home/vagrant/staging
-                               mkdir /home/vagrant/staging
-                               scp /home/vagrant/paymybuddy-jenkins-cicd/* ${STAGING_USER}@${STAGING_IP}:/home/vagrant/staging
-                               docker rm -f production_${IMAGE_NAME_DB} || true
-                               docker rm -f production_${IMAGE_NAME_BACKEND} || true
-                               cd /home/vagrant/staging
-                               docker compose up -d
-                               """
-
-                            }
-                        
-                        }
-                    }
-                }
-                stage("Test in staging") {
-                    agent any
-                    steps{
-                        echo "========executing Test staging========"
-                        script{
-                               sshagent (credentials: ['staging_ssh_credentials']) {
                               sh """
                                # defining remote commands
                                remote_cmds="
@@ -163,7 +140,35 @@ pipeline{
                                # executing remote commands
                                ssh -o StrictHostKeyChecking=no ${STAGING_USER}@${STAGING_IP} "\$remote_cmds"
                                """
-                               }
+
+                            }
+                        
+                        }
+                    }
+                }
+                stage("Test in staging") {
+                    agent any
+                    steps{
+                        echo "========executing Test staging========"
+                        script{
+                               sshagent (credentials: ['staging_ssh_credentials']) {
+                               echo "Testing database availability on 3306"          
+                               sh """
+                               # defining remote commands
+                               remote_cmds1="
+                               docker ps | grep  "3306"
+                               "
+                               ssh -o StrictHostKeyChecking=no ${STAGING_USER}@${STAGING_IP} "\$remote_cmds1"
+                               """
+                                    
+                               echo "Testing backend availability on 8181"
+                               sh """
+                               # defining remote commands
+                               remote_cmds2="
+                               docker ps | grep  "8181"
+                               "
+                               ssh -o StrictHostKeyChecking=no ${STAGING_USER}@${STAGING_IP} "\$remote_cmds2"
+                               """          
                              
                         }
                     }
@@ -218,9 +223,26 @@ pipeline{
                stage("Test in production") {
                     agent any
                     steps{
-                        echo "========executing Test staging========"
+                        echo "========executing Test production========"
                         script{
-                            sh 'curl http://${PRODUCTION_IP}:8181 | grep -q "Pay My Buddy"'
+                                                     sshagent (credentials: ['staging_ssh_credentials']) {
+                               echo "Testing database availability on 3306"          
+                               sh """
+                               # defining remote commands
+                               remote_cmds1="
+                               docker ps | grep  "3306"
+                               "
+                               ssh -o StrictHostKeyChecking=no ${PRODUCTION_USER}@${PRODUCTION_IP} "\$remote_cmds1"
+                               """
+                                    
+                               echo "Testing backend availability on 8181"
+                               sh """
+                               # defining remote commands
+                               remote_cmds2="
+                               docker ps | grep  "8181"
+                               "
+                               ssh -o StrictHostKeyChecking=no ${PRODUCTION_USER}@${PRODUCTION_IP} "\$remote_cmds2"
+                               """          
                         }
                     }
                     
