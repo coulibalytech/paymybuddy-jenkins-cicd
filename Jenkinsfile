@@ -173,6 +173,7 @@ pipeline{
                         }
                     }
                     
+                  }
                 }
     
                 stage("Deploy in production") {
