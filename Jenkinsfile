@@ -4,7 +4,7 @@
 pipeline{
           environment{
               IMAGE_NAME_DB = "paymybuddy-db"
-              IMAGE_NAME_BACKEND = "paymybuddy-paymybuddy-backend"     
+              IMAGE_NAME_BACKEND = "paymybuddy-backend"     
               IMAGE_TAG = "latest"
               ENV_FILE = "${WORKSPACE}/.env"
               STAGING = "coulibaltech-staging"
@@ -76,6 +76,7 @@ pipeline{
                                 sh "docker commit ${IMAGE_NAME_DB} ${IMAGE_NAME_DB}:${IMAGE_TAG}"
                                 sh "docker tag ${IMAGE_NAME_DB}:${IMAGE_TAG} ${REPOSITORY_NAME}/${IMAGE_NAME_DB}:${IMAGE_TAG}"
                                 sh "docker push ${REPOSITORY_NAME}/${IMAGE_NAME_DB}:${IMAGE_TAG}"
+                                sh "docker tag ${IMAGE_NAME_BACKEND}:${IMAGE_TAG} ${REPOSITORY_NAME}/${IMAGE_NAME_BACKEND}:${IMAGE_TAG}"
                                 sh "docker push ${REPOSITORY_NAME}/${IMAGE_NAME_BACKEND}:${IMAGE_TAG}"
                                 sh "docker logout"      
                             }
