@@ -248,6 +248,8 @@ pipeline{
                     }
                
                 }
+                      
+            }
 
             post {
                     always { 
@@ -259,7 +261,6 @@ pipeline{
                 }
 
     
-            }
           
         }
           
