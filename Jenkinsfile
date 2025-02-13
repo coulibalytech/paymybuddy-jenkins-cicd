@@ -73,7 +73,8 @@ pipeline{
                         steps {
                             script {
                                 echo "Pousser l'image Docker vers le registre..."
-                                sh "docker commit ${IMAGE_NAME_DB} ${REPOSITORY_NAME}/${IMAGE_NAME_DB}:${IMAGE_TAG"
+                                sh "docker commit ${IMAGE_NAME_DB}:${IMAGE_TAG}"
+                                sh "docker tag ${IMAGE_NAME_DB}:${IMAGE_TAG} ${REPOSITORY_NAME}/${IMAGE_NAME_DB}:${IMAGE_TAG}"
                                 sh "docker push ${REPOSITORY_NAME}/${IMAGE_NAME_DB}:${IMAGE_TAG}"
                                 sh "docker push ${REPOSITORY_NAME}/${IMAGE_NAME_BACKEND}:${IMAGE_TAG}"
                                 sh "docker logout"      
