@@ -4,7 +4,7 @@
 pipeline{
           environment{
               IMAGE_NAME_DB = "paymybuddy-db"
-              IMAGE_NAME_BACKEND = "paymybuddy-backend"     
+              IMAGE_NAME_BACKEND = "paymybuddy-paymybuddy-backend"     
               IMAGE_TAG = "latest"
               ENV_FILE = "${WORKSPACE}/.env"
               STAGING = "coulibaltech-staging"
