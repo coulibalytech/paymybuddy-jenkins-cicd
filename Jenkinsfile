@@ -109,7 +109,7 @@ pipeline{
                       
                       script{
                             sshagent (credentials: ['staging_ssh_credentials']) {
-                                echo "Uploading Docker image to Staging"
+                                echo "Uploading Docker image to Staging test"
                                       
                               sh """
                               [ -d ~/.ssh ] || mkdir ~/.ssh && chmod 0700 ~/.ssh
