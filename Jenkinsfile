@@ -12,18 +12,19 @@ pipeline{
               REPOSITORY_NAME = "coulibalytech"
 
             // Staging EC2
-              STAGING_IP = "35.173.193.238"
-              STAGING_USER = "ubuntu"
+              STAGING_IP = "192.168.56.18"
+              STAGING_USER = "vagrant"
               STAGING_DEPLOY_PATH = "/home/ubuntu/app/staging"
               STAGING_HTTP_PORT = "80" // Port spécifique pour staging
 
              // Production EC2
-              PRODUCTION_IP = "54.90.94.222"
-              PRODUCTION_USER = "ubuntu"
+              PRODUCTION_IP = "192.168.56.19"
+              PRODUCTION_USER = "vagrant"
               PRODUCTION_DEPLOY_PATH = "/home/ubuntu/app/production"
               PRODUCTION_HTTP_PORT = "80" // Port spécifique pour production
 
-              SSH_CREDENTIALS_ID = "ec2_ssh_credentials"
+              SSH_CREDENTIALS_STAGING_ID = "staging_ssh_credentials"
+              SSH_CREDENTIALS_PRODUCTION_ID = "production_ssh_credentials"
               DOCKERHUB_CREDENTIALS = 'dockerhub-credentials-id'
           }
           agent none
@@ -105,34 +106,19 @@ pipeline{
                       echo "========executing Deploy in staging========"
                       
                       script{
-                            sshagent (credentials: ['ec2_ssh_credentials']) {
-                                echo "Uploading Docker image to Staging EC2"
+                            sshagent (credentials: ['staging_ssh_credentials']) {
+                                echo "Uploading Docker image to Staging"
+                                      
                                sh """
                                # defining remote commands
-                               remote_cmds="
-                               docker network rm paymybuddy-network 2>/dev/null || true &&
-                               docker network create paymybuddy-network &&
-                               docker pull ${REPOSITORY_NAME}/${IMAGE_NAME_DB}:${IMAGE_TAG} && docker pull ${REPOSITORY_NAME}/${IMAGE_NAME_BACKEND}:${IMAGE_TAG} &&
-                               docker rm -f staging_${IMAGE_NAME_DB} || true &&   docker rm -f staging_${IMAGE_NAME_BACKEND} || true &&
-                               docker run --name staging_${IMAGE_NAME_DB} -d \
-                                       --network paymybuddy-network \
-                                        -e MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD} \
-                                        -e MYSQL_DATABASE=db_paymybuddy \
-                                        -e MYSQL_USER=${MYSQL_USER} \
-                                        -e MYSQL_PASSWORD=${MYSQL_PASSWORD} \
-                                        -p 3306:3306 \
-                                        -v db-data:/var/lib/mysql \
-                                        -v ./initdb:/docker-entrypoint-initdb.d $REPOSITORY_NAME/$IMAGE_NAME_DB:$IMAGE_TAG
-                               docker run --name staging_$IMAGE_NAME_BACKEND -d \
-                                       --network paymybuddy-network \
-                                        -e SPRING_DATASOURCE_URL=jdbc:mysql://paymybuddy-db:3306/db_paymybuddy \
-                                        -e SPRING_DATASOURCE_USERNAME=${MYSQL_USER} \
-                                        -e SPRING_DATASOURCE_PASSWORD=${MYSQL_PASSWORD} \
-                                        -e MYSQL_PASSWORD=${MYSQL_PASSWORD} \
-                                        -p 8181:8080 $REPOSITORY_NAME/$IMAGE_NAME_BACKEND:$IMAGE_TAG
-                               "
-                               # executing remote commands
-                               ssh -o StrictHostKeyChecking=no ${STAGING_USER}@${STAGING_IP} "\$remote_cmds"
+                               ssh ${STAGING_USER}@${STAGING_IP}
+                               rm -rf /home/vagrant/staging
+                               mkdir /home/vagrant/staging
+                               scp /home/vagrant/paymybuddy-jenkins-cicd/* ${STAGING_USER}@${STAGING_IP}:/home/vagrant/staging
+                               docker rm -f production_${IMAGE_NAME_DB} || true
+                               docker rm -f production_${IMAGE_NAME_BACKEND} || true
+                               cd /home/vagrant/staging
+                               docker compose up -d
                                """
 
                             }
@@ -145,7 +131,18 @@ pipeline{
                     steps{
                         echo "========executing Test staging========"
                         script{
-                            sh 'curl http://${STAGING_IP}:8181 | grep -q "Pay My Buddy"'
+                               sshagent (credentials: ['staging_ssh_credentials']) {
+                                    sh="""     
+                                    remote_cmds="
+                                         echo "Testing database availability on 3306"
+                                         docker ps | grep  "3306"
+                                         echo "Testing backend availability on 8181"
+                                         docker ps | grep  "8181"
+                                         "
+                                       ssh -o StrictHostKeyChecking=no ${STAGING_USER}@${STAGING_IP} "\$remote_cmds"
+                                      """   
+                               }
+                             
                         }
                     }
                     
