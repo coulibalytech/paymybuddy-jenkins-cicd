@@ -108,10 +108,13 @@ pipeline{
                       echo "========executing Deploy in staging========"
                       
                       script{
-                            sshagent (['staging_ssh_credentials']) {
+                            sshagent (credentials: ['staging_ssh_credentials']) {
                                 echo "Uploading Docker image to Staging"
                                       
                               sh """
+                              [ -d ~/.ssh ] || mkdir ~/.ssh && chmod 0700 ~/.ssh
+                              ssh-keyscan -t rsa,dsa ${STAGING_IP} >> ~/.ssh/known_hosts
+                              ssh ${STAGING_USER}@${STAGING_IP}
                                # defining remote commands
                                remote_cmds="
                                docker network rm paymybuddy-network 2>/dev/null || true &&
