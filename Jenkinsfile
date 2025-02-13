@@ -28,8 +28,8 @@ pipeline{
               SSH_CREDENTIALS_PRODUCTION_ID = "production_ssh_credentials"
               DOCKERHUB_CREDENTIALS = 'dockerhub-credentials-id'
           }
-          agent none
-          stages{     
+            agent none
+            stages{     
                 stage("Build image paymybuddy-db and backend with Docker compose") {
                     agent any
                     steps{
@@ -53,8 +53,8 @@ pipeline{
                                     
                               echo "Testing backend availability on 8181"
                               sh 'docker ps | grep  "8181"'
-                          }
-                      }
+                            }
+                        }
                 }
                 stage("Login to Docker Hub Registry") {
                     agent any      
@@ -63,8 +63,8 @@ pipeline{
                                 echo "Connexion au registre Docker hub"
                             withCredentials([usernamePassword(credentialsId: "${DOCKERHUB_CREDENTIALS}", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                                 sh "echo ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin"
-                           }
-                       }
+                            }
+                        }
                     }
 
                 }
@@ -82,24 +82,22 @@ pipeline{
                                 sh "docker logout"      
                             }
                         }
-                    }
-                 
-               stage("Clean container") {
-                  agent any
-                  steps{
-                      echo "========executing Clean container========"
-                      script{
-                        sh '''
-                        docker stop ${IMAGE_NAME_DB}
-                        docker stop ${IMAGE_NAME_BACKEND_C}
-                        docker rm -f ${IMAGE_NAME_DB}
-                        docker rm -f ${IMAGE_NAME_BACKEND_C}
-                          '''
-                       }
-                   }
-                  
                 }
-            
+                stage("Clean container") {
+                            agent any
+                            steps{
+                                echo "========executing Clean container========"
+                                script{
+                                  sh '''
+                                  docker stop ${IMAGE_NAME_DB}
+                                  docker stop ${IMAGE_NAME_BACKEND_C}
+                                  docker rm -f ${IMAGE_NAME_DB}
+                                  docker rm -f ${IMAGE_NAME_BACKEND_C}
+                                    '''
+                                }
+                            }
+                            
+                }
                 stage("Deploy in staging") {
                   when{
                       expression {GIT_BRANCH == 'origin/master'}
@@ -170,16 +168,16 @@ pipeline{
                                ssh -o StrictHostKeyChecking=no ${STAGING_USER}@${STAGING_IP} "\$remote_cmds2"
                                """          
                              
+                            }
                         }
-                    }
                     
-                  }
+                    }
                 }
     
                 stage("Deploy in production") {
                   when{
                       expression {GIT_BRANCH == 'origin/master'}
-                  }
+                   }
                   agent any
 
                   steps{
@@ -219,8 +217,8 @@ pipeline{
                             }
                         
                         }
-                  }
-               }
+                    }
+                }
                stage("Test in production") {
                     agent any
                     steps{
@@ -244,23 +242,24 @@ pipeline{
                                "
                                ssh -o StrictHostKeyChecking=no ${PRODUCTION_USER}@${PRODUCTION_IP} "\$remote_cmds2"
                                """          
+                            }
                         }
-                    }
                     
-                }
+                    }
                
+                }
+
+            post {
+                            always { 
+                                    script {
+                                        /* Use slackNotifier.groovy from shared library and provide current build result as parameter*/
+                                        slackNotifier currentBuild.result
+                                    }
+                                }
+                }
+
+    
             }
-
-       post {
-                     always { 
-                               script {
-                                 /* Use slackNotifier.groovy from shared library and provide current build result as parameter*/
-                                 slackNotifier currentBuild.result
-                               }
-                     }
-          }
-
-
-
           
-}              
+        }
+          
