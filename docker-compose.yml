@@ -21,7 +21,7 @@ services:
   paymybuddy-backend:
     build: 
       context: .
-    container_name: backend
+    container_name: paymybuddy-backend
     restart: always
     environment:
         SPRING_DATASOURCE_URL: jdbc:mysql://paymybuddy-db:3306/db_paymybuddy
