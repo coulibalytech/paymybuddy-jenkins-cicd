@@ -225,7 +225,7 @@ pipeline{
                     steps{
                         echo "========executing Test production========"
                         script{
-                                                     sshagent (credentials: ['staging_ssh_credentials']) {
+                              sshagent (credentials: ['staging_ssh_credentials']) {
                                echo "Testing database availability on 3306"          
                                sh """
                                # defining remote commands
