@@ -36,7 +36,7 @@ pipeline{
                            echo "Building Docker images (DB + Backend)"
                               sh """
                                   docker compose up -d --build
-                                  sleep 10
+                                  sleep 5
                               """
                         }
                     }
@@ -73,6 +73,7 @@ pipeline{
                         steps {
                             script {
                                 echo "Pousser l'image Docker vers le registre..."
+                                sh "docker commit ${IMAGE_NAME_DB} ${REPOSITORY_NAME}/${IMAGE_NAME_DB}:${IMAGE_TAG"
                                 sh "docker push ${REPOSITORY_NAME}/${IMAGE_NAME_DB}:${IMAGE_TAG}"
                                 sh "docker push ${REPOSITORY_NAME}/${IMAGE_NAME_BACKEND}:${IMAGE_TAG}"
                                 sh "docker logout"      
@@ -132,15 +133,33 @@ pipeline{
                         echo "========executing Test staging========"
                         script{
                                sshagent (credentials: ['staging_ssh_credentials']) {
-                                    sh="""     
-                                    remote_cmds="
-                                         echo "Testing database availability on 3306"
-                                         docker ps | grep  "3306"
-                                         echo "Testing backend availability on 8181"
-                                         docker ps | grep  "8181"
-                                         "
-                                       ssh -o StrictHostKeyChecking=no ${STAGING_USER}@${STAGING_IP} "\$remote_cmds"
-                                      """   
+                              sh """
+                               # defining remote commands
+                               remote_cmds="
+                               docker network rm paymybuddy-network 2>/dev/null || true &&
+                               docker network create paymybuddy-network &&
+                               docker pull ${REPOSITORY_NAME}/${IMAGE_NAME_DB}:${IMAGE_TAG} && docker pull ${REPOSITORY_NAME}/${IMAGE_NAME_BACKEND}:${IMAGE_TAG} &&
+                               docker rm -f staging_${IMAGE_NAME_DB} || true &&   docker rm -f staging_${IMAGE_NAME_BACKEND} || true &&
+                               docker run --name production_${IMAGE_NAME_DB} -d \
+                                       --network paymybuddy-network \
+                                        -e MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD} \
+                                        -e MYSQL_DATABASE=db_paymybuddy \
+                                        -e MYSQL_USER=${MYSQL_USER} \
+                                        -e MYSQL_PASSWORD=${MYSQL_PASSWORD} \
+                                        -p 3306:3306 \
+                                        -v db-data:/var/lib/mysql \
+                                        -v ./initdb:/docker-entrypoint-initdb.d $REPOSITORY_NAME/$IMAGE_NAME_DB:$IMAGE_TAG
+                               docker run --name staging_$IMAGE_NAME_BACKEND -d \
+                                       --network paymybuddy-network \
+                                        -e SPRING_DATASOURCE_URL=jdbc:mysql://paymybuddy-db:3306/db_paymybuddy \
+                                        -e SPRING_DATASOURCE_USERNAME=${MYSQL_USER} \
+                                        -e SPRING_DATASOURCE_PASSWORD=${MYSQL_PASSWORD} \
+                                        -e MYSQL_PASSWORD=${MYSQL_PASSWORD} \
+                                        -p 8181:8080 $REPOSITORY_NAME/$IMAGE_NAME_BACKEND:$IMAGE_TAG
+                               "
+                               # executing remote commands
+                               ssh -o StrictHostKeyChecking=no ${STAGING_USER}@${STAGING_IP} "\$remote_cmds"
+                               """
                                }
                              
                         }
