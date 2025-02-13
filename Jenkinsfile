@@ -108,7 +108,7 @@ pipeline{
                       echo "========executing Deploy in staging========"
                       
                       script{
-                            sshagent (credentials: ['staging_ssh_credentials']) {
+                            sshagent (['staging_ssh_credentials']) {
                                 echo "Uploading Docker image to Staging"
                                       
                               sh """
@@ -184,7 +184,7 @@ pipeline{
                       echo "========executing Deploy in production========"
                       
                       script{
-                            sshagent (credentials: ['ec2_ssh_credentials']) {
+                            sshagent (credentials: ['production_ssh_credentials']) {
                                 echo "Uploading Docker image to Production EC2"
                              sh """
                                # defining remote commands
@@ -224,7 +224,7 @@ pipeline{
                     steps{
                         echo "========executing Test production========"
                         script{
-                              sshagent (credentials: ['staging_ssh_credentials']) {
+                              sshagent (credentials: ['production_ssh_credentials']) {
                                echo "Testing database availability on 3306"          
                                sh """
                                # defining remote commands
