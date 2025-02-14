@@ -108,15 +108,12 @@ pipeline{
                       echo "========executing Deploy in staging========"
                       
                       script{
-                              sh """
-                              ssh-keyscan -H ${STAGING_IP} >> ~/.ssh/known_hosts
-                              """
-                             sshagent (credentials: ['staging_ssh_credentials']) {
-                                echo "Uploading Docker image to Staging test"
+                            withCredentials([usernamePassword(credentialsId: 'ssh-credentials-id', 
+                                                     usernameVariable: 'SSH_USER', 
+                                                     passwordVariable: 'SSH_PASS')]) {
+                        sh """
+                              echo "Uploading Docker image to Staging test"
                                       
-                              sh """
-                              ssh-keyscan -H ${STAGING_IP} >> ~/.ssh/known_hosts
-
                                # defining remote commands
                                remote_cmds="
                                docker network rm paymybuddy-network 2>/dev/null || true &&
@@ -141,7 +138,7 @@ pipeline{
                                         -p 8181:8080 $REPOSITORY_NAME/$IMAGE_NAME_BACKEND:$IMAGE_TAG
                                "
                                # executing remote commands
-                               ssh -o StrictHostKeyChecking=no ${STAGING_USER}@${STAGING_IP} "\$remote_cmds"
+                               sshpass -p "$SSH_PASS" ssh -o ${STAGING_USER}@${STAGING_IP} "\$remote_cmds"
                                """
 
                             }
