@@ -136,7 +136,7 @@ pipeline{
                                         -p 8181:8080 $REPOSITORY_NAME/$IMAGE_NAME_BACKEND:$IMAGE_TAG
                                "
                                # executing remote commands
-                               sshpass -p 'vagrant' ssh -o StrictHostKeyChecking=no vangrant@${STAGING_IP} "\$remote_cmds"
+                               sshpass -p 'vagrant' ssh -p 22 -o StrictHostKeyChecking=no vagrant@192.168.56.18 "\$remote_cmds"
                                """
 
                             //}
