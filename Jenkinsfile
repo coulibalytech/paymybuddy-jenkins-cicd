@@ -108,10 +108,9 @@ pipeline{
                       echo "========executing Deploy in staging========"
                       
                       script{
-                           // withCredentials([usernamePassword(credentialsId: "${SSH_CREDENTIALS_STAGING_ID}",usernameVariable: 'SSH_USER',passwordVariable: 'SSH_PASS')]) {
+                            echo "Uploading Docker image to Staging test"     
+                           withCredentials([usernamePassword(credentialsId: "${SSH_CREDENTIALS_STAGING_ID}",usernameVariable: 'SSH_USER',passwordVariable: 'SSH_PASS')]) {
                         sh """
-                              echo "Uploading Docker image to Staging test"
-                                      
                                # defining remote commands
                                remote_cmds="
                                docker network rm paymybuddy-network 2>/dev/null || true &&
@@ -136,10 +135,10 @@ pipeline{
                                         -p 8181:8080 $REPOSITORY_NAME/$IMAGE_NAME_BACKEND:$IMAGE_TAG
                                "
                                # executing remote commands
-                               sshpass -p 'vagrant' ssh -p 22 -o StrictHostKeyChecking=no vagrant@192.168.56.18 "\$remote_cmds"
+                               sshpass -p '$SSH_PASS' ssh -o StrictHostKeyChecking=no $SSH_USER@192.168.56.18 "\$remote_cmds"
                                """
 
-                            //}
+                            }
                         
                         }
                     }
