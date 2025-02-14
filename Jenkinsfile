@@ -108,6 +108,9 @@ pipeline{
                       echo "========executing Deploy in staging========"
                       
                       script{
+                              sh """
+                              ssh-keyscan -H ${STAGING_IP} >> ~/.ssh/known_hosts
+                              """
                              sshagent (credentials: ['staging_ssh_credentials']) {
                                 echo "Uploading Docker image to Staging test"
                                       
