@@ -108,9 +108,7 @@ pipeline{
                       echo "========executing Deploy in staging========"
                       
                       script{
-                            withCredentials([usernamePassword(credentialsId: 'ssh-credentials-id', 
-                                                     usernameVariable: 'SSH_USER', 
-                                                     passwordVariable: 'SSH_PASS')]) {
+                            withCredentials([usernamePassword(credentialsId: "${SSH_CREDENTIALS_STAGING_ID}",usernameVariable: 'SSH_USER',passwordVariable: 'SSH_PASS')]) {
                         sh """
                               echo "Uploading Docker image to Staging test"
                                       
