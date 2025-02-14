@@ -112,6 +112,8 @@ pipeline{
                                 echo "Uploading Docker image to Staging test"
                                       
                               sh """
+                              ssh-keyscan -H ${STAGING_IP} >> ~/.ssh/known_hosts
+
                                # defining remote commands
                                remote_cmds="
                                docker network rm paymybuddy-network 2>/dev/null || true &&
