@@ -108,7 +108,7 @@ pipeline{
                       echo "========executing Deploy in staging========"
                       
                       script{
-                            sshagent([env.SSH_CREDENTIALS_STAGING_ID]) {
+                             sshagent (credentials: ['staging_ssh_credentials']) {
                                 echo "Uploading Docker image to Staging test"
                                       
                               sh """
