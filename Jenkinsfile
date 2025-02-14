@@ -13,7 +13,7 @@ pipeline{
               REPOSITORY_NAME = "coulibalytech"
 
             // Staging EC2
-              STAGING_IP = "192.168.56.18"
+              STAGING_IP = "54.144.211.248"
               STAGING_USER = "vagrant"
               STAGING_DEPLOY_PATH = "/home/ubuntu/app/staging"
               STAGING_HTTP_PORT = "80" // Port spécifique pour staging
@@ -109,8 +109,8 @@ pipeline{
                       
                       script{
                             echo "Uploading Docker image to Staging test"     
-                           withCredentials([usernamePassword(credentialsId: 'staging_ssh_credentials', usernameVariable: 'SSH_USER', passwordVariable: 'SSH_PASS')]) {
-                        sh """
+                           sshagent (credentials: ['staging_ssh_credentials']) {
+                             sh """
                                # defining remote commands
                                remote_cmds="
                                docker network rm paymybuddy-network 2>/dev/null || true &&
@@ -135,7 +135,7 @@ pipeline{
                                         -p 8181:8080 $REPOSITORY_NAME/$IMAGE_NAME_BACKEND:$IMAGE_TAG
                                "
                                # executing remote commands
-                               sshpass -p '$SSH_PASS' ssh -o StrictHostKeyChecking=no $SSH_USER@192.168.56.18 "\$remote_cmds"
+                               ssh -o StrictHostKeyChecking=no ${STAGING_USER}@${STAGING_IP} "\$remote_cmds"
                                """
 
                             }
