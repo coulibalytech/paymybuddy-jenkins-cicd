@@ -109,7 +109,7 @@ pipeline{
                       
                       script{
                             echo "Uploading Docker image to Staging test"     
-                           withCredentials([usernamePassword(credentialsId: 'staging_ssh_credentials',usernameVariable: 'SSH_USER',passwordVariable: 'SSH_PASS')]) {
+                           withCredentials([usernamePassword(credentialsId: 'staging_ssh_credentials', usernameVariable: 'SSH_USER', passwordVariable: 'SSH_PASS')]) {
                         sh """
                                # defining remote commands
                                remote_cmds="
