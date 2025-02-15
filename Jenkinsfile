@@ -136,7 +136,7 @@ pipeline{
                                         -p 8181:8080 $REPOSITORY_NAME/$IMAGE_NAME_BACKEND:$IMAGE_TAG
                                "
                                # executing remote commands
-                               ssh -o StrictHostKeyChecking=no ${STAGING_USER}@${STAGING_IP}"\$remote_cmds"
+                               ssh -T ${STAGING_USER}@${STAGING_IP}"\$remote_cmds"
                                '''
 
                             }
