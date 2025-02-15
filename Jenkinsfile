@@ -110,7 +110,8 @@ pipeline{
                       script{
                           echo "Uploading Docker image to Staging test"     
                           withCredentials([sshUserPrivateKey(credentialsId: 'staging_ssh_credentials', keyFileVariable: 'SSH_KEY_PATH', usernameVariable: 'SSH_USER')]) {
-                             sh """
+                             sh '''
+                                echo "Deploying app..."
                                # defining remote commands
                                remote_cmds="
                                docker network rm paymybuddy-network 2>/dev/null || true &&
@@ -136,7 +137,7 @@ pipeline{
                                "
                                # executing remote commands
                                ssh -i $SSH_KEY_PATH ${SSH_USER}@${STAGING_IP}"\$remote_cmds"
-                               """
+                               '''
 
                             }
                         
