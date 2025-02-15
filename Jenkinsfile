@@ -112,7 +112,6 @@ pipeline{
                           sshagent (credentials: ['staging_ssh_credentials']) {
                              sh '''
                                 echo "Deploying app..."
-                                ping 192.168.56.18
                                # defining remote commands
                                remote_cmds="
                                ping 192.168.56.18
@@ -138,7 +137,7 @@ pipeline{
                                         -p 8181:8080 $REPOSITORY_NAME/$IMAGE_NAME_BACKEND:$IMAGE_TAG
                                "
                                # executing remote commands
-                               ssh -o StrictHostKeyChecking=no ${STAGING_USER}@${STAGING_IP}"\$remote_cmds"
+                               ssh -o StrictHostKeyChecking=no ${STAGING_USER}@192.168.56.18 "\$remote_cmds"
                                '''
 
                             }
