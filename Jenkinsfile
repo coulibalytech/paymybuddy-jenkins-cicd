@@ -13,7 +13,7 @@ pipeline{
               REPOSITORY_NAME = "coulibalytech"
 
             // Staging EC2
-              STAGING_IP = "54.144.211.248"
+              STAGING_IP = "192.168.56.18"
               STAGING_USER = "vagrant"
               STAGING_DEPLOY_PATH = "/home/ubuntu/app/staging"
               STAGING_HTTP_PORT = "80" // Port spécifique pour staging
