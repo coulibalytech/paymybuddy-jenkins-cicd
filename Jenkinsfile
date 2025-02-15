@@ -112,8 +112,10 @@ pipeline{
                           sshagent (credentials: ['staging_ssh_credentials']) {
                              sh '''
                                 echo "Deploying app..."
+                                ping 192.168.56.18
                                # defining remote commands
                                remote_cmds="
+                               ping 192.168.56.18
                                docker network rm paymybuddy-network 2>/dev/null || true &&
                                docker network create paymybuddy-network &&
                                docker pull ${REPOSITORY_NAME}/${IMAGE_NAME_DB}:${IMAGE_TAG} && docker pull ${REPOSITORY_NAME}/${IMAGE_NAME_BACKEND}:${IMAGE_TAG} &&
