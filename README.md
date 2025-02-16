@@ -67,6 +67,7 @@ The infrastructure will run on a Docker-enabled server with **Ubuntu 20.04**. Th
 
 - **Paymybuddy-backend:** Service to manages user data and transactions
 - **Paymybuddy-db:** Database service to stores users, transactions, and account details
+- Repository github jenkins cicd
 
 ---
 
