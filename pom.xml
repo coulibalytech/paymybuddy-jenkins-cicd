@@ -15,6 +15,9 @@
 	<description>Transfer money easily between friends</description>
 	<properties>
 		<java.version>17</java.version>
+		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
+          	<sonar.organization>coulibalytech_paymybuddy-jenkins-cicd</sonar.organization>
+    		<sonar.login>029286e3a86664aef7f03f9e426aff4d0a87dbf5</sonar.login>
 	</properties>
 	<dependencies>
 		<dependency>
