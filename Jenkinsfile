@@ -171,35 +171,22 @@ pipeline{
                       echo "========executing Deploy in production========"
                       
                       script{
-                            sshagent (credentials: ['production_ssh_credentials']) {
-                                echo "Uploading Docker image to Production EC2"
-                             sh """
+                            withCredentials([usernamePassword(credentialsId: 'ssh-username-password', usernameVariable: 'SSH_USER', passwordVariable: 'SSH_PASS')]) {
+                             sh '''
+                                echo "Deploying app..."
                                # defining remote commands
                                remote_cmds="
-                               docker network rm paymybuddy-network 2>/dev/null || true &&
-                               docker network create paymybuddy-network &&
-                               docker pull ${REPOSITORY_NAME}/${IMAGE_NAME_DB}:${IMAGE_TAG} && docker pull ${REPOSITORY_NAME}/${IMAGE_NAME_BACKEND}:${IMAGE_TAG} &&
-                               docker rm -f production_${IMAGE_NAME_DB} || true &&   docker rm -f production_${IMAGE_NAME_BACKEND} || true &&
-                               docker run --name production_${IMAGE_NAME_DB} -d \
-                                       --network paymybuddy-network \
-                                        -e MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD} \
-                                        -e MYSQL_DATABASE=db_paymybuddy \
-                                        -e MYSQL_USER=${MYSQL_USER} \
-                                        -e MYSQL_PASSWORD=${MYSQL_PASSWORD} \
-                                        -p 3306:3306 \
-                                        -v db-data:/var/lib/mysql \
-                                        -v ./initdb:/docker-entrypoint-initdb.d $REPOSITORY_NAME/$IMAGE_NAME_DB:$IMAGE_TAG
-                               docker run --name production_$IMAGE_NAME_BACKEND -d \
-                                       --network paymybuddy-network \
-                                        -e SPRING_DATASOURCE_URL=jdbc:mysql://paymybuddy-db:3306/db_paymybuddy \
-                                        -e SPRING_DATASOURCE_USERNAME=${MYSQL_USER} \
-                                        -e SPRING_DATASOURCE_PASSWORD=${MYSQL_PASSWORD} \
-                                        -e MYSQL_PASSWORD=${MYSQL_PASSWORD} \
-                                        -p 8181:8080 $REPOSITORY_NAME/$IMAGE_NAME_BACKEND:$IMAGE_TAG
+                               docker rm -f ${IMAGE_NAME_DB} 2>/dev/nul || true && 
+                               docker rm -f ${IMAGE_NAME_BACKEND} 2>/dev/nul || true && 
+                               rm -rf paymybuddy-jenkins-cicd 2>/dev/nul || true &&
+                               git clone https://github.com/coulibalytech/paymybuddy-jenkins-cicd.git &&
+                               cd paymybuddy-jenkins-cicd &&
+                               docker compose up -d --build
+                               sleep 5
                                "
                                # executing remote commands
-                               ssh -o StrictHostKeyChecking=no ${PRODUCTION_USER}@${PRODUCTION_IP} "\$remote_cmds"
-                               """
+                               sshpass -p $SSH_PASS ssh -o StrictHostKeyChecking=no ${PRODUCTION_USER}@192.168.56.19 "\$remote_cmds"
+                               '''
 
                             }
                         
@@ -211,24 +198,25 @@ pipeline{
                     steps{
                         echo "========executing Test production========"
                         script{
-                              sshagent (credentials: ['production_ssh_credentials']) {
+                               withCredentials([usernamePassword(credentialsId: 'ssh-username-password', usernameVariable: 'SSH_USER', passwordVariable: 'SSH_PASS')]) {
                                echo "Testing database availability on 3306"          
-                               sh """
+                               sh '''
                                # defining remote commands
                                remote_cmds1="
                                docker ps | grep  "3306"
                                "
-                               ssh -o StrictHostKeyChecking=no ${PRODUCTION_USER}@${PRODUCTION_IP} "\$remote_cmds1"
-                               """
+                               sshpass -p $SSH_PASS ssh -o StrictHostKeyChecking=no ${STAGING_USER}@192.168.56.18 "\$remote_cmds1"
+                               '''
                                     
                                echo "Testing backend availability on 8181"
-                               sh """
+                               sh '''
                                # defining remote commands
                                remote_cmds2="
                                docker ps | grep  "8181"
                                "
-                               ssh -o StrictHostKeyChecking=no ${PRODUCTION_USER}@${PRODUCTION_IP} "\$remote_cmds2"
-                               """          
+                                sshpass -p $SSH_PASS ssh -o StrictHostKeyChecking=no ${STAGING_USER}@192.168.56.18 "\$remote_cmds2"
+                               '''          
+                             
                             }
                         }
                     
