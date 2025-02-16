@@ -62,15 +62,20 @@ pipeline{
                       agent any    
                       steps {
                           script {
-                              // Lancer l'analyse avec Maven/Gradle ou SonarScanner selon votre projet
-                              // SonarScanner exemple :
+                              withCredentials([usernamePassword(credentialsId: 'ssh-username-password', usernameVariable: 'SSH_USER', passwordVariable: 'SSH_PASS')]) {
                               sh '''
+                                  remote_cmds="
                                    mvn sonar-scanner \
                                   -Dsonar.projectKey=coulibalytech_paymybuddy-jenkins-cicd \
                                   -Dsonar.organization=cheick.coulibaly \
                                   -Dsonar.host.url=https://sonarcloud.io \
                                   -Dsonar.login=$SONAR_AUTH_TOKEN
-                              '''
+                                  "
+                                   # executing remote commands
+                                   sshpass -p $SSH_PASS ssh -o StrictHostKeyChecking=no vagrant@192.168.56.17 "\$remote_cmds"
+                              '''     
+                              }
+                             
                           }
                       }
                   }
