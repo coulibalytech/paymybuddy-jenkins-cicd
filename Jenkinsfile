@@ -109,7 +109,7 @@ pipeline{
                       
                       script{
                           echo "Uploading Docker image to Staging test"     
-                          sshagent (credentials: ['staging_ssh_credentials']) {
+                         withCredentials([usernamePassword(credentialsId: 'ssh-username-password', usernameVariable: 'SSH_USER', passwordVariable: 'SSH_PASS')]) {
                              sh '''
                                 echo "Deploying app..."
                                # defining remote commands
@@ -137,7 +137,7 @@ pipeline{
                                         -p 8181:8080 $REPOSITORY_NAME/$IMAGE_NAME_BACKEND:$IMAGE_TAG
                                "
                                # executing remote commands
-                               ssh ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${STAGING_USER}@192.168.56.18 "\$remote_cmds"
+                               sshpass -p $SSH_PASS ssh -o StrictHostKeyChecking=no ${STAGING_USER}@192.168.56.18 "\$remote_cmds"
                                '''
 
                             }
