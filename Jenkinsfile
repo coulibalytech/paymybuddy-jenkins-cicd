@@ -65,6 +65,7 @@ pipeline{
                               withCredentials([usernamePassword(credentialsId: 'ssh-username-password', usernameVariable: 'SSH_USER', passwordVariable: 'SSH_PASS')]) {
                               sh '''
                                   remote_cmds="
+                                  cd paymybuddy-jenkins-cicd &&
                                    mvn sonar-scanner \
                                   -Dsonar.projectKey=coulibalytech_paymybuddy-jenkins-cicd \
                                   -Dsonar.organization=cheick.coulibaly \
