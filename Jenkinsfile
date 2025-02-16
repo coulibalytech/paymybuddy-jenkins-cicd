@@ -59,6 +59,7 @@ pipeline{
                         }
                 }
                 stage('SonarCloud Analysis') {
+                      agent any    
                       steps {
                           script {
                               // Lancer l'analyse avec Maven/Gradle ou SonarScanner selon votre projet
