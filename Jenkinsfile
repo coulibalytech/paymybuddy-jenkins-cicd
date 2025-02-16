@@ -28,7 +28,7 @@ pipeline{
               SSH_CREDENTIALS_PRODUCTION_ID = "production_ssh_credentials"
               DOCKERHUB_CREDENTIALS = 'dockerhub-credentials-id'
 
-              SONAR_AUTH_TOKEN = credentials('SONAR_AUTH_TOKEN')
+              SONAR_AUTH_TOKEN = credentials('sonarcloud_token-id')
           }
             agent none
             stages{     
