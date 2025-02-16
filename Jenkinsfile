@@ -115,7 +115,10 @@ pipeline{
                                # defining remote commands
                                remote_cmds="
                                rm -rf paymybuddy-jenkins-cicd 2>/dev/nul || true
-                               git clone 
+                               git clone https://github.com/coulibalytech/paymybuddy-jenkins-cicd.git
+                               cd paymybuddy-jenkins-cicd
+                               docker compose up -d --build
+                               sleep
                                "
                                # executing remote commands
                                sshpass -p $SSH_PASS ssh -o StrictHostKeyChecking=no ${STAGING_USER}@192.168.56.18 "\$remote_cmds"
@@ -131,24 +134,24 @@ pipeline{
                     steps{
                         echo "========executing Test staging========"
                         script{
-                               sshagent (credentials: ['staging_ssh_credentials']) {
+                                withCredentials([usernamePassword(credentialsId: 'ssh-username-password', usernameVariable: 'SSH_USER', passwordVariable: 'SSH_PASS')]) {
                                echo "Testing database availability on 3306"          
-                               sh """
+                               sh '''
                                # defining remote commands
                                remote_cmds1="
                                docker ps | grep  "3306"
                                "
-                               ssh -o StrictHostKeyChecking=no ${STAGING_USER}@${STAGING_IP} "\$remote_cmds1"
-                               """
+                               sshpass -p $SSH_PASS ssh -o StrictHostKeyChecking=no ${STAGING_USER}@192.168.56.18 "\$remote_cmds1"
+                               '''
                                     
                                echo "Testing backend availability on 8181"
-                               sh """
+                               sh '''
                                # defining remote commands
                                remote_cmds2="
                                docker ps | grep  "8181"
                                "
-                               ssh -o StrictHostKeyChecking=no ${STAGING_USER}@${STAGING_IP} "\$remote_cmds2"
-                               """          
+                                sshpass -p $SSH_PASS ssh -o StrictHostKeyChecking=no ${STAGING_USER}@192.168.56.18 "\$remote_cmds2"
+                               '''          
                              
                             }
                         }
