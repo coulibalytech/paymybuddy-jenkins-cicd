@@ -114,11 +114,13 @@ pipeline{
                                 echo "Deploying app..."
                                # defining remote commands
                                remote_cmds="
-                               rm -rf paymybuddy-jenkins-cicd 2>/dev/nul || true
-                               git clone https://github.com/coulibalytech/paymybuddy-jenkins-cicd.git
-                               cd paymybuddy-jenkins-cicd
+                               docker rm -f ${IMAGE_NAME_DB} 2>/dev/nul || true && 
+                               docker rm -f ${IMAGE_NAME_BACKEND} 2>/dev/nul || true && 
+                               rm -rf paymybuddy-jenkins-cicd 2>/dev/nul || true &&
+                               git clone https://github.com/coulibalytech/paymybuddy-jenkins-cicd.git &&
+                               cd paymybuddy-jenkins-cicd &&
                                docker compose up -d --build
-                               sleep
+                               sleep 5
                                "
                                # executing remote commands
                                sshpass -p $SSH_PASS ssh -o StrictHostKeyChecking=no ${STAGING_USER}@192.168.56.18 "\$remote_cmds"
