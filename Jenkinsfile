@@ -27,6 +27,8 @@ pipeline{
               SSH_CREDENTIALS_STAGING_ID = "staging_ssh_credentials"
               SSH_CREDENTIALS_PRODUCTION_ID = "production_ssh_credentials"
               DOCKERHUB_CREDENTIALS = 'dockerhub-credentials-id'
+
+              SONAR_AUTH_TOKEN = credentials('SONAR_AUTH_TOKEN')
           }
             agent none
             stages{     
@@ -56,6 +58,21 @@ pipeline{
                             }
                         }
                 }
+                stage('SonarCloud Analysis') {
+                      steps {
+                          script {
+                              // Lancer l'analyse avec Maven/Gradle ou SonarScanner selon votre projet
+                              // SonarScanner exemple :
+                              sh '''
+                                  sonar-scanner \
+                                  -Dsonar.projectKey=coulibalytech \
+                                  -Dsonar.organization=cheick.coulibaly \
+                                  -Dsonar.host.url=https://sonarcloud.io \
+                                  -Dsonar.login=$SONAR_AUTH_TOKEN
+                              '''
+                          }
+                      }
+                  }
                 stage("Login to Docker Hub Registry") {
                     agent any      
                     steps {
