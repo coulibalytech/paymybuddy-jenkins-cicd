@@ -65,7 +65,7 @@ pipeline{
                               //withCredentials([usernamePassword(credentialsId: 'ssh-username-password', usernameVariable: 'SSH_USER', passwordVariable: 'SSH_PASS')]) {
                               sh '''
                                   
-                                  cd paymybuddy-jenkins-cicd 
+                                  pwd
                                   mvn clean verify sonar:sonar 
                                    sonar-scanner \
                                   -Dsonar.projectKey=coulibalytech_paymybuddy-jenkins-cicd \
