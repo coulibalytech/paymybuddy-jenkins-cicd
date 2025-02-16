@@ -65,6 +65,10 @@ pipeline{
                               // Lancer l'analyse avec Maven/Gradle ou SonarScanner selon votre projet
                               // SonarScanner exemple :
                               sh '''
+                                  wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
+                                  unzip sonar-scanner-cli-*.zip
+                                  sudo mv sonar-scanner-5.0.1.3006-linux /opt/sonar-scanner
+                                  echo 'export PATH=$PATH:/opt/sonar-scanner/bin' >> ~/.bashrc
                                   sonar-scanner \
                                   -Dsonar.projectKey=coulibalytech_paymybuddy-jenkins-cicd \
                                   -Dsonar.organization=cheick.coulibaly \
