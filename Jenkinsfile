@@ -71,7 +71,7 @@ pipeline{
                                   -Dsonar.projectKey=coulibalytech_paymybuddy-jenkins-cicd \
                                   -Dsonar.organization=cheick.coulibaly \
                                   -Dsonar.host.url=https://sonarcloud.io \
-                                  -Dsonar.login=$SONAR_AUTH_TOKEN
+                                  -Dsonar.login=${SONAR_AUTH_TOKEN}
                                   "
                                    # executing remote commands
                                    sshpass -p $SSH_PASS ssh -o StrictHostKeyChecking=no vagrant@192.168.56.17 "\$remote_cmds"
