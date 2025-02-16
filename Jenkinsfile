@@ -65,6 +65,7 @@ pipeline{
                               // Lancer l'analyse avec Maven/Gradle ou SonarScanner selon votre projet
                               // SonarScanner exemple :
                               sh '''
+                                  echo 'export PATH=$PATH:/opt/sonar-scanner/bin' >> ~/.bashrc
                                   source ~/.bashrc
                                    sonar-scanner \
                                   -Dsonar.projectKey=coulibalytech_paymybuddy-jenkins-cicd \
