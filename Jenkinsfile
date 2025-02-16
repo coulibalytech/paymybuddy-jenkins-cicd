@@ -66,7 +66,7 @@ pipeline{
                               sh '''
                                   remote_cmds="
                                   cd paymybuddy-jenkins-cicd &&
-                                  mvn clean verify sonar:sonar 
+                                  mvn clean verify sonar:sonar &&
                                   mvn sonar-scanner \
                                   -Dsonar.projectKey=coulibalytech_paymybuddy-jenkins-cicd \
                                   -Dsonar.organization=cheick.coulibaly \
