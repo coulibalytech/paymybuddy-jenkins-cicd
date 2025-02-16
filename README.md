@@ -67,15 +67,13 @@ The infrastructure will run on a Docker-enabled server with **Ubuntu 20.04**. Th
 
 - **Paymybuddy-backend:** Service to manages user data and transactions
 - **Paymybuddy-db:** Database service to stores users, transactions, and account details
-- **Registry_backend:** Backend service of private docker registry
-- **Registry_frontend:** Frontend service of private docker registry to manage docker image
 
 ---
 
 ### How to use it ?:
 
 
-1. **Preparation of host machine: ( you can use another methode to build your host vm)**
+1. **Preparation of host machine[host-jenkins-cicd,staging and production]: ( you can use another methode to build your host vm)**
    - From your terminal, use the following commands to build your host machin via vagrant  :
       cd /build-host-vm
       buil-host-vm> vagrant up
