@@ -67,7 +67,7 @@ pipeline{
                               sh '''
                                   sonar-scanner \
                                   -Dsonar.projectKey=coulibalytech_paymybuddy-jenkins-cicd \
-                                  -Dsonar.organization=cheick.coulibaly/paymybuddy-jenkins-cicd \
+                                  -Dsonar.organization=cheick.coulibaly \
                                   -Dsonar.host.url=https://sonarcloud.io \
                                   -Dsonar.login=$SONAR_AUTH_TOKEN
                               '''
