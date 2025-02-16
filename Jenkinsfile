@@ -66,8 +66,8 @@ pipeline{
                               // SonarScanner exemple :
                               sh '''
                                   sonar-scanner \
-                                  -Dsonar.projectKey=coulibalytech \
-                                  -Dsonar.organization=cheick.coulibaly \
+                                  -Dsonar.projectKey=coulibalytech_paymybuddy-jenkins-cicd \
+                                  -Dsonar.organization=cheick.coulibaly/paymybuddy-jenkins-cicd \
                                   -Dsonar.host.url=https://sonarcloud.io \
                                   -Dsonar.login=$SONAR_AUTH_TOKEN
                               '''
