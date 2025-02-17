@@ -4,6 +4,7 @@
 pipeline{
            tools {
         maven "Maven" // Nom de l'installation Maven configurée dans Manage Jenkins
+        jdk "JDK"
           }
           environment{
               IMAGE_NAME_DB = "paymybuddy-db"
