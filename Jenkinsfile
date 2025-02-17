@@ -49,11 +49,13 @@ pipeline{
                               withCredentials([usernamePassword(credentialsId: 'ssh-username-password', usernameVariable: 'SSH_USER', passwordVariable: 'SSH_PASS')]) {
                                sh '''
                                 remote_cmds="
+                                  cd paymybuddy-jenkins-cicd &&
                                   docker compose up -d --build &&
                                   sleep 5
                                   "
                                   # executing remote commands
                                   sshpass -p $SSH_PASS ssh -o StrictHostKeyChecking=no ${STAGING_USER}@192.168.56.17 "\$remote_cmds"
+                                  
                                   '''
                               }
                              
