@@ -43,7 +43,6 @@ pipeline{
                     steps{
                         script{
                            echo "Building Docker images (DB + Backend)"
-                              sh 'mvn clean install'
                               sh """
                                   docker compose up -d --build
                                   sleep 5
@@ -72,6 +71,7 @@ pipeline{
                               withCredentials([usernamePassword(credentialsId: 'ssh-username-password', usernameVariable: 'SSH_USER', passwordVariable: 'SSH_PASS')]) {
                               sh '''
                                   remote_cmds="
+                                  mvn clean verify sonar:sonar
                                   mvn sonar:scanner \
                                   -Dsonar.projectKey=coulibalytech_paymybuddy-jenkins-cicd \
                                   -Dsonar.organization=cheick.coulibaly \
