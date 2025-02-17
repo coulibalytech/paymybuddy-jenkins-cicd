@@ -4,6 +4,7 @@
 pipeline{
            tools {
         maven "Maven" // Nom de l'installation Maven configurée dans Manage Jenkins
+        maven "docker" // Nom de l'installation Maven configurée dans Manage Jenkins              
           }
           environment{
               IMAGE_NAME_DB = "paymybuddy-db"
@@ -46,18 +47,12 @@ pipeline{
                     steps{
                         script{
                            echo "Building Docker images (DB + Backend)"
-                              withCredentials([usernamePassword(credentialsId: 'ssh-username-password', usernameVariable: 'SSH_USER', passwordVariable: 'SSH_PASS')]) {
+                             // withCredentials([usernamePassword(credentialsId: 'ssh-username-password', usernameVariable: 'SSH_USER', passwordVariable: 'SSH_PASS')]) {
                                sh '''
-                                remote_cmds="
-                                  cd paymybuddy-jenkins-cicd &&
-                                  docker compose up -d --build &&
+                                  docker compose up -d --build 
                                   sleep 5
-                                  "
-                                  # executing remote commands
-                                  sshpass -p $SSH_PASS ssh -o StrictHostKeyChecking=no ${STAGING_USER}@192.168.56.17 "\$remote_cmds"
-                                  
                                   '''
-                              }
+                              //}
                              
                         }
                     }
