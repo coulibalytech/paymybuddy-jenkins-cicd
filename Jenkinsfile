@@ -33,7 +33,8 @@ pipeline{
             agent none
             stages{   
                 stage('Checkout') {
-                      steps {
+                    agent any    
+                    steps {
                           checkout scm // Récupère le code source
                       }
                 }      
