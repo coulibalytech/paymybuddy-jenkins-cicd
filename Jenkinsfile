@@ -70,17 +70,11 @@ pipeline{
                           script {
                               withCredentials([usernamePassword(credentialsId: 'ssh-username-password', usernameVariable: 'SSH_USER', passwordVariable: 'SSH_PASS')]) {
                               sh '''
-                                  remote_cmds="
-                                  cd paymybuddy-jenkins-cicd &&
-                                  mvn clean verify sonar:sonar &&
                                   mvn sonar:scanner \
                                   -Dsonar.projectKey=coulibalytech_paymybuddy-jenkins-cicd \
                                   -Dsonar.organization=cheick.coulibaly \
                                   -Dsonar.host.url=https://sonarcloud.io \
                                   -Dsonar.login=$SONAR_AUTH_TOKEN
-                                   "
-                                   # executing remote commands
-                                    sshpass -p $SSH_PASS ssh -o StrictHostKeyChecking=no vagrant@192.168.56.17 "\$remote_cmds"
                               '''     
                               }
                              
