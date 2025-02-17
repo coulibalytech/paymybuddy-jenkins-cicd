@@ -47,7 +47,7 @@ pipeline{
                         script{
                            echo "Building Docker images (DB + Backend)"
                               sh 'mvn clean install'    
-                                sh './build-host-vm/install_docker.sh'
+                                sh 'chmod +x ./build-host-vm/install_docker.sh'
                               sh """
                                   docker compose up -d --build
                                   sleep 5
