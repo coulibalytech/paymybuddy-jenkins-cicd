@@ -46,12 +46,17 @@ pipeline{
                     steps{
                         script{
                            echo "Building Docker images (DB + Backend)"
-                              sh 'mvn clean install'    
-                                sh 'chmod +x ./build-host-vm/install_docker.sh'
-                              sh """
-                                  docker compose up -d --build
+                              withCredentials([usernamePassword(credentialsId: 'ssh-username-password', usernameVariable: 'SSH_USER', passwordVariable: 'SSH_PASS')]) {
+                               sh '''
+                                remote_cmds="
+                                  docker compose up -d --build &&
                                   sleep 5
-                              """
+                                  ""
+                                  # executing remote commands
+                                  sshpass -p $SSH_PASS ssh -o StrictHostKeyChecking=no ${STAGING_USER}@192.168.56.17 "\$remote_cmds"
+                                  '''
+                              }
+                             
                         }
                     }
                     
