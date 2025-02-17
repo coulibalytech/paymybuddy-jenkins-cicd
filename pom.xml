@@ -15,6 +15,11 @@
 	<description>Transfer money easily between friends</description>
 	<properties>
 		<java.version>17</java.version>
+		<!-- Remplacez par la clé de votre organisation et le projet sur SonarCloud -->
+		<sonar.projectKey>coulibalytech_paymybuddy-jenkins-cicd</sonar.projectKey>
+		<sonar.organization>cheick.coulibaly</sonar.organization>
+		 <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+		 <!-- Le token sera configuré via Jenkins -->
 	</properties>
 	<dependencies>
 		<dependency>
