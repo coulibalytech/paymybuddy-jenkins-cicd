@@ -2,6 +2,9 @@
 @Library('shared-library@master')_
 
 pipeline{
+           tools {
+        maven "Maven" // Nom de l'installation Maven configurée dans Manage Jenkins
+          }
           environment{
               IMAGE_NAME_DB = "paymybuddy-db"
               IMAGE_NAME_BACKEND = "paymybuddy-paymybuddy-backend"
@@ -43,6 +46,7 @@ pipeline{
                     steps{
                         script{
                            echo "Building Docker images (DB + Backend)"
+                              sh 'mvn clean install'    
                               sh """
                                   docker compose up -d --build
                                   sleep 5
