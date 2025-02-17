@@ -31,12 +31,18 @@ pipeline{
               SONAR_AUTH_TOKEN = credentials('sonarcloud_token-id')
           }
             agent none
-            stages{     
+            stages{   
+                stage('Checkout') {
+                      steps {
+                          checkout scm // Récupère le code source
+                      }
+                }      
                 stage("Build image paymybuddy-db and backend with Docker compose") {
                     agent any
                     steps{
                         script{
                            echo "Building Docker images (DB + Backend)"
+                              sh 'mvn clean install'
                               sh """
                                   docker compose up -d --build
                                   sleep 5
@@ -65,9 +71,7 @@ pipeline{
                               withCredentials([usernamePassword(credentialsId: 'ssh-username-password', usernameVariable: 'SSH_USER', passwordVariable: 'SSH_PASS')]) {
                               sh '''
                                   remote_cmds="
-                                  cd paymybuddy-jenkins-cicd &&
-                                  mvn clean verify sonar:sonar &&
-                                  mvn sonar-scanner \
+                                  mvn sonar:scanner \
                                   -Dsonar.projectKey=coulibalytech_paymybuddy-jenkins-cicd \
                                   -Dsonar.organization=cheick.coulibaly \
                                   -Dsonar.host.url=https://sonarcloud.io \
