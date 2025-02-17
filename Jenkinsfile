@@ -51,7 +51,7 @@ pipeline{
                                 remote_cmds="
                                   docker compose up -d --build &&
                                   sleep 5
-                                  ""
+                                  "
                                   # executing remote commands
                                   sshpass -p $SSH_PASS ssh -o StrictHostKeyChecking=no ${STAGING_USER}@192.168.56.17 "\$remote_cmds"
                                   '''
