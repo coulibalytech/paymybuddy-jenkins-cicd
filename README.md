@@ -96,6 +96,14 @@ The infrastructure will run on a Docker-enabled server with **Ubuntu 20.04**. Th
 5. **Stage 5: Push Images(DB & Backend) in docker hub**
    - Push Images(DB & Backend) in docker hub
    **![Push Images(DB & Backend) in docker hub](/screenshots/Stage-5-Test-PushInDockhub.png)**
+
+6. **Stage 6: Clean container**
+   - Clean container after test
+   **![Clean container](/screenshots/Stage-6-CleanContainer.png)**
+
+7. **Stage 7: Deploy in stagingr**
+   - Deploy in staging application paymybuddy
+   **![Clean container](/screenshots/Stage-7-DeployStaging.png)**
      
 
 4. **Test Paymybuddy application:**
