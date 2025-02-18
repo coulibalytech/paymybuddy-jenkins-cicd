@@ -120,21 +120,20 @@ The infrastructure will run on a Docker-enabled server with **Ubuntu 20.04**. Th
    **![Clean container](/screenshots/Stage-10-Test-in-production.png)**
      
 
-4. **Test Paymybuddy application:**
+11. **Manual Test Paymybuddy application:**
    - Access the frontend of application webbrowser
    **![Access to application via webrowser](/screenshots/Lancement-application-Paymybuddy.png)**
    **![Create user count](/screenshots/Creation-compte-utilisateur.png)**
    **![Connec to user count](/screenshots/Creation-compte-utilisateur-2.png)**
    **![Connec to user count](/screenshots/Creation-compte-utilisateur-2.png)**
 
-5. **Deployment to Docker registry :**
-   - Create docker images of paymybuddy-backend and paymybuddy-db
-   **![Docker images of paymybuddy-db](/screenshots/capture-image-container-paymybuddy-db.png)**
-   **![Docker images of paymybuddy-backend](/screenshots/capture-image-container-paymybuddy-backend.png)**
-   **![Check version tag](/screenshots/version-tag-local-paymybuddy.png)**
-   **![Deployment in docker registry](/screenshots/Push-images-registry-preivee.png)**
+12. **Stage 10: Slack notification of jobs pipeline**
+   - Send the result of job via Slack notification
+   **![Slack notification](/screenshots/Stage-12-SlackNotifcation.png)**
+   **![Slack](/screenshots/Stage-13-SlackNotifcation.png)**
 
-6. **Check docker image in gui of registry :**
- **![List of docker image](/screenshots/GUI-REGSITRY-PAYMYBUDDY.png)**
+
+
+
    
 
