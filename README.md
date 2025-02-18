@@ -101,9 +101,21 @@ The infrastructure will run on a Docker-enabled server with **Ubuntu 20.04**. Th
    - Clean container after test
    **![Clean container](/screenshots/Stage-6-CleanContainer.png)**
 
-7. **Stage 7: Deploy in stagingr**
+7. **Stage 7: Deploy in staging**
    - Deploy in staging application paymybuddy
    **![Clean container](/screenshots/Stage-7-DeployStaging.png)**
+
+8. **Stage 8: Test in staging**
+   - Test application in staging environement
+   **![Clean container](/screenshots/Stage-8-Test-in-staging.png)**
+
+9. **Stage 9: Deploy in production**
+   - Deploy in production application paymybuddy
+   **![Clean container](/screenshots/Stage-9-Deploy-in-production.png)**
+
+10. **Stage 10: Test in production**
+   - Test application in production environement
+   **![Clean container](/screenshots/Stage-10-Test-in-production.png)**
      
 
 4. **Test Paymybuddy application:**
