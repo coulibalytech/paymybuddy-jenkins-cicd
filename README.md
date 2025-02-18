@@ -81,12 +81,22 @@ The infrastructure will run on a Docker-enabled server with **Ubuntu 20.04**. Th
 2. **Stage 2: Building Docker images (DB + Backend) via Docker compose:**
    - Commmande docker compose builds the docker images of paymybuddy-db and paymybuddy-backend
      **![Build DB and Backend images](/screenshots/Stage2-Build-Docker-image-BD-BAKCEND.png)**
+     
 3. **Stage 3: Test Docker Images**
    - Test paymybuddy-db image
    **![Testing database availability on 3306](/screenshots/Stage-3-Test-database.png)**
      
     - Test paymybuddy-backend image
    **![Testing database availability on 3306](/screenshots/Stage-3-Test-backend.png)**
+
+4. **Stage 4: SonarCloud Analysis**
+   - Test SonarCloud Analysis
+     **![SonarCloud Analysis](/screenshots/Stage4-Test-sonarcloud.png)**
+     
+5. **Stage 5: Push Images(DB & Backend) in docker hub**
+   - Push Images(DB & Backend) in docker hub
+   **![Push Images(DB & Backend) in docker hub](/screenshots/Stage-5-Test-PushInDockhub.png)**
+     
 
 4. **Test Paymybuddy application:**
    - Access the frontend of application webbrowser
