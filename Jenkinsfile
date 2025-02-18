@@ -76,7 +76,7 @@ pipeline{
                           script {
                               //withCredentials([usernamePassword(credentialsId: 'ssh-username-password', usernameVariable: 'SSH_USER', passwordVariable: 'SSH_PASS')]) {
                               sh '''
-                                  sonar-scanner \
+                                  mvn sonar-scanner \
                                   -Dsonar.projectKey=coulibalytech_paymybuddy-jenkins-cicd \
                                   -Dsonar.organization=cheick.coulibaly \
                                   -Dsonar.host.url=https://sonarcloud.io \
