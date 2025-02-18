@@ -71,23 +71,22 @@ The infrastructure will run on a Docker-enabled server with **Ubuntu 20.04**. Th
 
 ---
 
-### How to use it ?:
+### How to use it ? (Pipeline CI CD JENKINS FOR PAYMYBUDDY IN 12 STAGES):
 
 
-1. **Preparation of host machine[host-jenkins-cicd,staging and production]: ( you can use another methode to build your host vm)**
-   - From your terminal, use the following commands to build your host machin via vagrant  :
-      cd /build-host-vm
-      buil-host-vm> vagrant up
-   - After connect in your host via SSH-REMOTE VScode or MobaXtrem (host-ip/password(vangrant))
+1. **Stage 1:  Check out from version control**
+   - Control version repository of project  :
+     **![Check out from version control](/screenshots/stage1-Checkoutfromversioncontrol.png)**
 
-2. **Clone this repository in your local repository:**
-   - From your terminal run this commande to clone : git clone https://github.com/coulibalytech/paymybuddy.git
-   - cd /paymybuddy
-   - paymybuddy>
-   
-3. **Deploy both 4 via Docker-compose:**
-   - docker compose up -d --build
-   **![Docker compose resultat](/screenshots/lance-commande-docker-compose.png)**
+2. **Stage 2: Building Docker images (DB + Backend) via Docker compose:**
+   - Commmande docker compose builds the docker images of paymybuddy-db and paymybuddy-backend
+     **![Build DB and Backend images](/Stage2-Build-Docker-image-BD-BAKCEND.png)**
+3. **Stage 3: Test Docker Images**
+   - Test paymybuddy-db image
+   **![Testing database availability on 3306](/screenshots/Stage-3-Test-database.png)**
+     
+    - Test paymybuddy-backend image
+   **![Testing database availability on 3306](/screenshots/Stage-3-Test-backend.png)**
 
 4. **Test Paymybuddy application:**
    - Access the frontend of application webbrowser
