@@ -96,6 +96,8 @@ The infrastructure will run on a Docker-enabled server with **Ubuntu 20.04**. Th
 5. **Stage 5: Push Images(DB & Backend) in docker hub**
    - Push Images(DB & Backend) in docker hub
    **![Push Images(DB & Backend) in docker hub](/screenshots/Stage-5-Test-PushInDockhub.png)**
+   - View of docker images in DockerHub
+      **![DockerHub](/screenshots/DeploymenttoDockerhub.png)**
 
 6. **Stage 6: Clean container**
    - Clean container after test
