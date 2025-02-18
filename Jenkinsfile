@@ -78,7 +78,7 @@ pipeline{
                               sh '''
                                   mvn clean verify sonar:sonar \
                                   -Dsonar.projectKey=coulibalytech_paymybuddy-jenkins-cicd \
-                                  -Dsonar.organization=cheick.coulibaly \
+                                  -Dsonar.organization=coulibalytech \
                                   -Dsonar.host.url=https://sonarcloud.io \
                                   -Dsonar.login=$SONAR_AUTH_TOKEN
                               '''     
